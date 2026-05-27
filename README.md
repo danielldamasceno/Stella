@@ -66,10 +66,7 @@ Se estiver usando VS Code com extensão Java:
 
 ### 👻 Sistema de Medo
 O jogador sente medo quando um inimigo está próximo:
-- **< 20px**: Barra de medo 100%
-- **20-75px**: Barra de medo 75%
-- **75-150px**: Barra de medo 50%
-- **150-300px**: Barra de medo 20%
+- Quanto mais proximo, mais medo
 
 ### 💥 Colisões
 O sistema de colisão verifica se o jogador pode se mover em uma direção analisando os tiles:
