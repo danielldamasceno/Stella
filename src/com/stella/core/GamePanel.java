@@ -37,8 +37,8 @@ public class GamePanel extends JPanel implements Runnable{
     final int maxScreenRow = 12;       // Quantas linhas de tiles cabem na tela
 
     // Tamanho do mundo
-    public final int maxWorldCol = 52;     // Quantas colunas de tiles no mundo
-    public final int maxWorldRow = 12;     // Quantas linhas de tiles no mundo
+    public final int maxWorldCol = 50;     // Quantas colunas de tiles no mundo
+    public final int maxWorldRow = 50;     // Quantas linhas de tiles no mundo
     public final int worldWidth = maxWorldCol * tileSz;
     public final int worldHeight = maxWorldRow * tileSz;
 

@@ -48,14 +48,15 @@ public class TileManager {
 
         // Carrega apenas os tiles usados pelo mapa atual.
         // O map.txt usa 1 para piso e 2 para parede.
-        loadTile(1, "/res/tile/floor1.png", false);
-        loadTile(2, "/res/tile/wall1.png", true);
-        loadTile(3, "/res/tile/floor2.png", false);
-        loadTile(4, "/res/tile/floor3.png", false);
-        loadTile(5, "/res/tile/wall2.png", true);
-        loadTile(6, "/res/tile/wall3.png", true);
-        loadTile(7, "/res/tile/armario.png", true);
-        loadTile(8, "/res/tile/armariodown.png", true);
+        loadTile(0, "/res/tile/00.png", false);
+        loadTile(3, "/res/tile/floor1.png", false);
+        loadTile(6, "/res/tile/wall1.png", true);
+        loadTile(4, "/res/tile/floor2.png", false);
+        loadTile(5, "/res/tile/floor3.png", false);
+        loadTile(7, "/res/tile/wall2.png", true);
+        loadTile(8, "/res/tile/wall3.png", true);
+        loadTile(1, "/res/tile/armario.png", true);
+        loadTile(2, "/res/tile/armariodown.png", true);
     }
 
     private void loadTile(int index, String path, boolean collision) {
@@ -139,7 +140,8 @@ public class TileManager {
                 // Índice do tile nesta posição
                 int tilenum = mapTileNum[j][i];
                 
-                if (tilenum < 0 || tilenum >= tile.length) continue;
+                
+                    if (tilenum < 0 || tilenum >= tile.length) continue;
                 if (tile[tilenum].image == null) continue;
                 
                 // Só desenha se o tile estiver dentro dos limites da tela (usando câmera)
@@ -147,6 +149,7 @@ public class TileManager {
                     ScreenY + gp.tileSz > 0 && ScreenY - gp.tileSz < gp.screenHeight) {
                     g2.drawImage(tile[tilenum].image, ScreenX, ScreenY, gp.tileSz, gp.tileSz, null);
                 }
+                
             }
         }
     }

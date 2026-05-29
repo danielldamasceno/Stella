@@ -1,7 +1,6 @@
 package com.stella.player;
 
 import com.stella.core.GamePanel;
-// import com.stella.player.Fear;
 import com.stella.entities.Entity;
 import com.stella.entities.superObject;
 import java.awt.Color;
@@ -41,8 +40,8 @@ public class Player extends Entity {
         screenY = gp.screenHeight/2-(gp.tileSz/2);
         
         // A posição no mundo começa onde a câmera está
-        worldX = screenX;
-        worldY = screenY;
+        worldX = screenX+900;
+        worldY = screenY+900;
         
         // Define a área de colisão (pequena, não ocupa todo o tile)
         solidArea = new Rectangle(gp.tileSz/4, gp.tileSz/2, gp.tileSz/2, gp.tileSz/2);
