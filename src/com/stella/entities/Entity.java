@@ -19,3 +19,4 @@ public class Entity {
     // Indica se a entidade colidiu com algo neste frame
     public boolean collisonOn = false;
 }
+

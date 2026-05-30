@@ -73,7 +73,7 @@ public class GamePanel extends JPanel implements Runnable{
     public static int dificulty = 1;
 
     // Array de objetos do mundo (inimigos, itens, etc)
-    public superObject obj[] = new superObject[5];
+    public superObject obj[] = new superObject[12]; //Limite de objetos
 
     // Posição da câmera (coordenada do mundo que aparece no canto superior-esquerdo)
     public int cameraX = 0;
@@ -261,8 +261,8 @@ public class GamePanel extends JPanel implements Runnable{
             
             // Ajusta a câmera para não sair dos limites do mapa.
             // cameraX/Y = coordenada do mundo que estará no canto superior-esquerdo da tela
-            int maxCameraX = worldWidth - screenWidth;
-            int maxCameraY = worldHeight - screenHeight;
+            int maxCameraX = worldWidth - screenWidth + 72;
+            int maxCameraY = worldHeight - screenHeight + 72;
             if (maxCameraX < 0) maxCameraX = 0;
             if (maxCameraY < 0) maxCameraY = 0;
 
@@ -312,7 +312,7 @@ public class GamePanel extends JPanel implements Runnable{
             // Desenha o mapa
             tileManager.Draw(g2);
             
-            // Desenha os objetos do mundo (inimigos, itens)
+            // Desenha os objetos do mundo (inimigos, itens, aliados)
             for(int i = 0; i < obj.length; i++){
                 if(obj[i] != null){
                     obj[i].draw(g2, this);

@@ -49,14 +49,16 @@ public class TileManager {
         // Carrega apenas os tiles usados pelo mapa atual.
         // O map.txt usa 1 para piso e 2 para parede.
         loadTile(0, "/res/tile/00.png", false);
-        loadTile(3, "/res/tile/floor1.png", false);
-        loadTile(6, "/res/tile/wall1.png", true);
-        loadTile(4, "/res/tile/floor2.png", false);
-        loadTile(5, "/res/tile/floor3.png", false);
-        loadTile(7, "/res/tile/wall2.png", true);
-        loadTile(8, "/res/tile/wall3.png", true);
         loadTile(1, "/res/tile/armario.png", true);
         loadTile(2, "/res/tile/armariodown.png", true);
+        loadTile(3, "/res/tile/floor1.png", false);
+        loadTile(4, "/res/tile/floor2.png", false);
+        loadTile(5, "/res/tile/floor3.png", false);
+        loadTile(6, "/res/tile/floor4.png", false);
+        loadTile(7, "/res/tile/floor5.png", false);
+        loadTile(8, "/res/tile/wall1.png", true);
+        loadTile(9, "/res/tile/wall2.png", true);
+        loadTile(10, "/res/tile/wall3.png", true);
     }
 
     private void loadTile(int index, String path, boolean collision) {

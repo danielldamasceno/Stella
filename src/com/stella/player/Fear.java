@@ -59,12 +59,17 @@ public class Fear {
             // Aumenta mais rápido quanto maior a proximidade (distIn)
             double inc = BASE_INCREASE + MAX_EXTRA * distIn * 0.16; // multiplicado por 0.16 para ajustar à taxa de atualização
             situation += inc;
+            //if (distIn < 160) situation += 0.01 * 0.16; // aumento extra quando muito perto
         } else {
             // Diminui a uma taxa fixa quando longe
             situation -= DECREASE_RATE * 0.16; // multiplicado por 0.16 para ajustar à taxa de atualização
         }
 
         // Aplica limites gerais
+        if (distIn > 0.9) { // GAME OVER! condição final de medo.
+            situation = 1;
+            //chamarFunçao para game over com codigo 1 de falha ao completar fase
+        }
         if (situation > 1) situation = 1;
         if (situation < 0) situation = 0;
 

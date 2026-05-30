@@ -31,6 +31,7 @@ public class Player extends Entity {
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     String situation;
+    String inDist; // !!DEBUG!! Distância do inimigo mais próximo 
 
     public Player(GamePanel gp, KeyHandler key){
         this.gp = gp;
@@ -40,8 +41,8 @@ public class Player extends Entity {
         screenY = gp.screenHeight/2-(gp.tileSz/2);
         
         // A posição no mundo começa onde a câmera está
-        worldX = screenX+900;
-        worldY = screenY+900;
+        worldX = screenX+1200;
+        worldY = screenY+1200;
         
         // Define a área de colisão (pequena, não ocupa todo o tile)
         solidArea = new Rectangle(gp.tileSz/4, gp.tileSz/2, gp.tileSz/2, gp.tileSz/2);
@@ -133,6 +134,7 @@ public class Player extends Entity {
         Fear.distanceFear(minDist); // Atualiza o medo com base na distância
         Fear.updateFear(minDist); // Atualiza o medo com base na distância
         situation = Fear.getFearLevel(); // Atualiza o texto de status com o nível de medo atual
+        inDist = String.format("%.2f", minDist); // !!DEBUG!! Mostra a distância do inimigo mais próximo
     }
 
     /**
@@ -217,6 +219,7 @@ public class Player extends Entity {
         if(situation != null){
             g2.setColor(Color.WHITE);
             g2.drawString(situation, 100, 100);
+            g2.drawString(inDist, 100, 120); // !!DEBUG!! Mostra a distância do inimigo mais próximo
         }
     }
 }
