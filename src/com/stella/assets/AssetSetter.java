@@ -61,7 +61,7 @@ public class AssetSetter {
                     break;
                 case 2:
                     if (gp.obj[i] == null) continue;
-                    gp.obj[i].WorldX = RandomUtils.randInt(8, 47) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldX = RandomUtils.randInt(8, 46) * gp.tileSz + gp.tileSz/2;
                     gp.obj[i].WorldY = RandomUtils.randInt(8, 11) * gp.tileSz + gp.tileSz/2;
                     break;
                 case 3:
