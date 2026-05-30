@@ -1,5 +1,9 @@
 package com.stella.core;
 
+import java.io.IOException;
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 /**
@@ -10,6 +14,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         // Cria a janela principal
         JFrame window = new JFrame("Stella");
+        
         
         // Configura para fechar ao clicar no X
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,6 +36,14 @@ public class App {
         
         // Coloca a janela no centro da tela
         window.setLocationRelativeTo(null);
+        
+        // Muda o ícone da janela para o sprite do personagem
+        try {
+        BufferedImage icon = ImageIO.read(App.class.getResourceAsStream("/res/MC/frontidle.png"));
+        window.setIconImage(icon);
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
         
         // Mostra a janela
         window.setVisible(true);

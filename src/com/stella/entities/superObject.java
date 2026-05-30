@@ -19,13 +19,17 @@ public class superObject {
     public boolean collsion = false;
     
     // Posição no mundo
-    public int WorldX, WorldY;
+    public double WorldX, WorldY;
     
     // Tamanho do objeto em pixels
     public int width, height;
     
     // Se verdadeiro, este objeto é um inimigo
     public boolean enemy = false;
+    public boolean ally = false;
+
+    // Tipo específico do inimigo
+    public String enemyType;
 
     /**
      * Desenha o objeto na tela se estiver dentro do campo de visão do jogador.
@@ -33,8 +37,8 @@ public class superObject {
      */
     public void draw(Graphics2D g2, GamePanel gp){
         // Calcula a posição na tela baseado na posição da câmera
-        int ScreenX = WorldX - gp.cameraX;
-        int ScreenY = WorldY - gp.cameraY;
+        int ScreenX = (int) (WorldX - gp.cameraX);
+        int ScreenY = (int) (WorldY - gp.cameraY);
         
         // Só desenha se o objeto estiver visível na tela (usando coordenadas da câmera)
         if (ScreenX + gp.tileSz > 0 && ScreenX - gp.tileSz < gp.screenWidth &&

@@ -1,6 +1,7 @@
 package com.stella.player;
 
 import com.stella.core.GamePanel;
+import com.stella.entities.Enemy;
 import com.stella.entities.Entity;
 import com.stella.entities.superObject;
 import java.awt.Color;
@@ -31,7 +32,10 @@ public class Player extends Entity {
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     String situation;
+    int winCondition = 0;
     String inDist; // !!DEBUG!! Distância do inimigo mais próximo 
+
+    public static Enemy Enemy;
 
     public Player(GamePanel gp, KeyHandler key){
         this.gp = gp;
@@ -41,7 +45,7 @@ public class Player extends Entity {
         screenY = gp.screenHeight/2-(gp.tileSz/2);
         
         // A posição no mundo começa onde a câmera está
-        worldX = screenX+1200;
+        worldX = screenX+600;
         worldY = screenY+1200;
         
         // Define a área de colisão (pequena, não ocupa todo o tile)
@@ -61,6 +65,15 @@ public class Player extends Entity {
         gp.cChecker.checkTile(this);
         // Checa proximidade com inimigos
         checkFear();
+        // Checa proximidade com aliados (safezone)
+        checkSafezone();
+
+        if(winCondition == 1) {
+            gp.gameState = GamePanel.VICTORY_STATE; 
+        }
+        if (Fear.situation == 1.0) { 
+            gp.gameState = GamePanel.GAME_OVER_STATE;
+        }
     }
 
     /**
@@ -126,6 +139,7 @@ public class Player extends Entity {
             if (dist < minDist) minDist = dist;
         }
 
+
         // Atualiza a situação com base na menor distância encontrada
         if (minDist == Double.MAX_VALUE) {
             situation = null; // nenhum inimigo presente
@@ -137,6 +151,34 @@ public class Player extends Entity {
         inDist = String.format("%.2f", minDist); // !!DEBUG!! Mostra a distância do inimigo mais próximo
     }
 
+    public void checkSafezone() {
+
+        double minDisttoAlly = Double.MAX_VALUE;
+        double playerCenterX = worldX + gp.tileSz / 2.0;
+        double playerCenterY = worldY + gp.tileSz / 2.0;
+
+        for (superObject Obj1 : gp.obj) {
+            if (Obj1 == null) continue;
+            if (!Obj1.ally) continue;
+
+            double objCenterX = Obj1.WorldX + Obj1.width / 2.0;
+            double objCenterY = Obj1.WorldY + Obj1.height / 2.0;
+
+            double dx = objCenterX - playerCenterX;
+            double dy = objCenterY - playerCenterY;
+
+            double dist = Math.hypot(dx, dy); // distância euclidiana
+            if (dist < minDisttoAlly) minDisttoAlly = dist;
+
+            if (minDisttoAlly < 300) {
+                Fear.situation = 0; // Zona segura, medo zerado
+                situation = Fear.getFearLevel(); // Atualiza o status
+                winCondition = 1;
+                return; // Indica que está na safezone
+            }
+        }
+        return; // Indica que não está na safezone
+    }
     /**
      * Carrega todas as imagens do jogador (movimento + idle) da pasta /res/MC.
      */

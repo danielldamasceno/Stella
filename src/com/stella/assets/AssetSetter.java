@@ -11,6 +11,7 @@ import com.stella.util.RandomUtils;
  */
 public class AssetSetter {
     GamePanel gp;
+    public int qtdEnemy = RandomUtils.randInt(8,10); // Define a quantidade de inimigos a serem criados
 
     public AssetSetter(GamePanel gp){
         this.gp = gp;
@@ -21,34 +22,39 @@ public class AssetSetter {
      * Cria inimigos e define suas posições iniciais.
      */
     public void setObject(){
-        // Ally:]
+        // Ally:
         gp.obj[0] = new Ally();
         // Define a posição inicial do aliado (em tiles do mundo)
         gp.obj[0].WorldX = 3 * gp.tileSz + gp.tileSz/2;
         gp.obj[0].WorldY = 45 * gp.tileSz + gp.tileSz/2;
-
+        // Marca como aliado
+        gp.obj[0].ally = true;
+        // Assegura que o aliado não seja marcado como inimigo
+        if (gp.obj[0] != null) gp.obj[0].enemy = false;
         // Define o tamanho do aliado
         gp.obj[0].height = 3 * gp.tileSz;
         gp.obj[0].width = 2 * gp.tileSz;
 
         // Enemys:
         // Cria novos inimigos
-        int qtdEnemy = RandomUtils.randInt(8,10); // !!DEBUG!! (!!Não em estado final!!) Define a quantidade de inimigos a serem criados
          for(int i = 1; i < qtdEnemy; i++) {
-             gp.obj[i] = new Enemy();
+             gp.obj[i] = new Enemy(gp);
          }
        
         // Define a posição inicial do inimigo (em tiles do mundo) 
 
-        //estaticos:
+        //fixos:
         gp.obj[1].WorldX = (29 - 2)* gp.tileSz + gp.tileSz/2;
         gp.obj[1].WorldY = (20 - 2) * gp.tileSz + gp.tileSz/2;
+        gp.obj[1].enemyType = "static";
 
         gp.obj[2].WorldX = (28 - 2)* gp.tileSz + gp.tileSz/2;
         gp.obj[2].WorldY = (22 - 2) * gp.tileSz + gp.tileSz/2;
+        gp.obj[2].enemyType = "static";
 
         gp.obj[3].WorldX = (30  - 2)* gp.tileSz + gp.tileSz/2;
         gp.obj[3].WorldY = (23 - 2) * gp.tileSz + gp.tileSz/2;
+        gp.obj[3].enemyType = "persuer";
 
         //dinamicos:
         for (int i = 4; i < qtdEnemy; i++) {
@@ -70,21 +76,9 @@ public class AssetSetter {
                     gp.obj[i].WorldY = RandomUtils.randInt(35, 43) * gp.tileSz + gp.tileSz/2;
                     break;
             }
-            
-
-            /* if (numInimigo == 1) {
-                 gp.obj[i] = new Enemy(); // Inimigo tipo 1
-             } else if (numInimigo == 2) {
-                 gp.obj[i] = new Enemy(); // Inimigo tipo 2 (pode ser uma subclasse de Enemy com comportamento diferente)
-             } else {
-                 gp.obj[i] = new Enemy(); // Inimigo tipo 3 (pode ser uma subclasse de Enemy com comportamento diferente)
-             } 
-            */
         }
         
         
-        
-
         // Define o tamanho dos inimigos (3x3 tiles) e marca-os como inimigos
         for (int i = 1; i < qtdEnemy; i++) {
             if (gp.obj[i] == null) continue;
@@ -93,10 +87,15 @@ public class AssetSetter {
             gp.obj[i].enemy = true;
         }
 
-        // Assegura que o aliado não seja marcado como inimigo
-        if (gp.obj[0] != null) gp.obj[0].enemy = false;
-
-
-        
+        // Define o tipo de inimigo
+        for (int i = 4; i < qtdEnemy; i++) {
+            if (gp.obj[i] == null) continue;
+            int typeEnemy = RandomUtils.randInt(1, 2);
+            if (typeEnemy == 1) {
+                gp.obj[i].enemyType = "persuer";
+            } else {
+                gp.obj[i].enemyType = "static";
+            }
+        }
     }
 }

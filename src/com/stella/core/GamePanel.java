@@ -20,6 +20,7 @@ import com.stella.player.Fear;
 import com.stella.player.Player;
 import com.stella.player.KeyHandler;
 import com.stella.world.TileManager;
+import com.stella.entities.Enemy;
 import com.stella.entities.superObject;
 import com.stella.physics.CollisionChecker;
 import com.stella.assets.AssetSetter;
@@ -49,6 +50,9 @@ public class GamePanel extends JPanel implements Runnable{
     // Estados do jogo
     public static final int TITLE_STATE = 0;  // Tela de título
     public static final int PLAY_STATE = 1;   // Jogo em andamento
+    public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
+    public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
+
     public int gameState = TITLE_STATE;
 
     // Thread do jogo (para rodar o loop em paralelo)
@@ -59,6 +63,7 @@ public class GamePanel extends JPanel implements Runnable{
     JButton normalButton;
     JButton hardButton;
     JButton backButton;
+    JButton restartButton;
     BufferedImage buttonTexture;
     
     // Componentes principais do jogo
@@ -144,14 +149,25 @@ public class GamePanel extends JPanel implements Runnable{
             }
         });
 
+        restartButton = createTexturedButton("Jogar Novamente", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                restartGame();
+        }
+        });
+        
+        
+
         this.add(startButton);
         this.add(optionsButton);
         this.add(easyButton);
         this.add(normalButton);
         this.add(hardButton);
         this.add(backButton);
+        this.add(restartButton);
 
         showOptionButtons(false);
+        restartButton.setVisible(false);
     }
 
     private void showOptionButtons(boolean visible) {
@@ -210,6 +226,7 @@ public class GamePanel extends JPanel implements Runnable{
      * Inicia o jogo removendo a tela de título.
      */
     public void startGame() {
+
         // Aplica a dificuldade selecionada e inicia o jogo
         Fear.setFearDificult(dificulty);
         this.remove(startButton);
@@ -226,7 +243,32 @@ public class GamePanel extends JPanel implements Runnable{
             startGameThread();
         }
     }
+    public void restartGame() {
+        Fear.situation = 0;
+        Fear.distIn = 0;
 
+        // Recria o jogador do zero
+        player = new Player(this, key);
+
+        // Recoloca os objetos no mundo
+        for (int i = 0; i < obj.length; i++) {
+        obj[i] = null;
+        }
+        setupGame();
+
+        // Esconde o botão e volta para o título
+        restartButton.setVisible(false);
+        gameState = TITLE_STATE;
+
+        // Readiciona os botões do menu (foram removidos no startGame)
+        if (startButton.getParent() == null) this.add(startButton);
+        if (optionsButton.getParent() == null) this.add(optionsButton);
+        showOptionButtons(false);
+
+        this.revalidate();
+        this.repaint();
+        this.requestFocusInWindow();
+    }
     /**
      * Loop principal do jogo (roda 60 vezes por segundo).
      */
@@ -259,6 +301,11 @@ public class GamePanel extends JPanel implements Runnable{
             // Move o jogador baseado nas teclas pressionadas
             player.andar();
             
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] instanceof Enemy) {
+                ((Enemy) obj[i]).update(player);
+                }
+            }
             // Ajusta a câmera para não sair dos limites do mapa.
             // cameraX/Y = coordenada do mundo que estará no canto superior-esquerdo da tela
             int maxCameraX = worldWidth - screenWidth + 72;
@@ -321,6 +368,32 @@ public class GamePanel extends JPanel implements Runnable{
             
             // Desenha o jogador
             player.Draw(g2);
+        } else if (gameState == GAME_OVER_STATE) {
+            // Fundo escuro semitransparente
+            g2.setColor(new Color(0, 0, 0, 180));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+
+            // Título "Game Over"
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 72));
+            String gameOver = "GAME OVER";
+            int gw = g2.getFontMetrics().stringWidth(gameOver);
+            g2.drawString(gameOver, screenWidth/2 - gw/2, screenHeight/2 - 50);
+
+            // Mostra o botão
+            restartButton.setVisible(true);
+
+        } else if (gameState == VICTORY_STATE) {
+            g2.setColor(new Color(0, 0, 0, 200));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+
+            g2.setColor(Color.YELLOW);
+            g2.setFont(new Font("Arial", Font.BOLD, 56));
+            String ending = "Você encontrou a Professora!";
+            int ew = g2.getFontMetrics().stringWidth(ending);
+            g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
+
+            restartButton.setVisible(true);
         }
     }
 
