@@ -9,7 +9,7 @@ public class Fear {
     /** Situação do jogador (0 = seguro, 1 = medo máximo) */
     public static double situation = 0;
 
-    /** Parâmetros */
+    /* Parâmetros */
     private static double distanceTillFear = 420;
     private static double BASE_INCREASE = 0.0001;    // subida mínima por atualização
     private static double MAX_EXTRA = 0.04;       // extra quando a distância é 0
@@ -29,21 +29,21 @@ public class Fear {
         switch (dificulty) {
             case 0: //facil
                 distanceTillFear = 410;
-                BASE_INCREASE = 0.00005; // metade da taxa de aumento
-                MAX_EXTRA = 0.02;        // metade do aumento extra
-                DECREASE_RATE = 0.04;    // dobra a taxa de diminuição
+                BASE_INCREASE = 0.00005; // taxa de aumento
+                MAX_EXTRA = 0.018;       // aumento extra
+                DECREASE_RATE = 0.03;    // taxa de diminuição
                 break;
             case 1: //medio
                 distanceTillFear = 460;
-                BASE_INCREASE = 0.0001;
-                MAX_EXTRA = 0.04;
+                BASE_INCREASE = 0.00008;
+                MAX_EXTRA = 0.035;
                 DECREASE_RATE = 0.02;
                 break;
             case 2: //dificil
                 distanceTillFear = 500;
-                BASE_INCREASE = 0.0002; // dobra a taxa de aumento
-                MAX_EXTRA = 0.08;       // dobra o aumento extra
-                DECREASE_RATE = 0.01;   // metade da taxa de diminuição
+                BASE_INCREASE = 0.00015; // taxa de aumento
+                MAX_EXTRA = 0.065;       // aumento extra
+                DECREASE_RATE = 0.015;   // taxa de diminuição
                 break;
         }
     }
@@ -70,7 +70,7 @@ public class Fear {
         }
 
         // Aplica limites gerais
-        if (distIn > 0.9) { // GAME OVER! condição final de medo.
+        if (distIn > 0.87) { // GAME OVER! condição final de medo.
             situation = 1;
         }
         if (situation > 1) situation = 1;

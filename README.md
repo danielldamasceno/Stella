@@ -11,11 +11,15 @@ O projeto foi reorganizado em **pacotes** (packages) para melhor organização:
 ```
 src/
 └── com/stella/
+    ├── assets/
+    │   └──AssetSetter.java
+    │ 
     ├── core/
     │   ├── App.java              → Classe principal que inicia o jogo
     │   └── GamePanel.java        → Painel principal, renderização e loop do jogo
     │
     ├── player/
+    │   ├── Fear.java
     │   ├── Player.java           → O jogador, movimento e detecção de inimigos
     │   └── KeyHandler.java       → Detecta entrada do teclado (WASD)
     │
@@ -24,22 +28,26 @@ src/
     │   └── TileManager.java      → Carrega e desenha o mapa
     │
     ├── entities/
-    │   ├── Entity.java           → Classe base para entidades (posição, colisão)
+    │   ├── Ally.java
     │   ├── superObject.java      → Classe base para objetos do mundo (inimigos, itens)
+    │   ├── Entity.java           → Classe base para entidades (posição, colisão)
     │   └── Enemy.java            → Inimigo do jogo
     │
     ├── physics/
     │   └── CollisionChecker.java → Verifica colisões com o mapa
     │
-    └── assets/
-        └── AssetSetter.java      → Inicializa objetos do jogo (inimigos, itens)
+    ├── assets/
+    │    └── AssetSetter.java      → Inicializa objetos do jogo (inimigos, itens)
+    │ 
+    └── util/
+        └──RandomUtils.java
 ```
 
 ---
 
 ## 🔧 Como Compilar e Rodar
 
-### Opção 1: Terminal (Recomendado)
+### Opção 1: Terminal 
 
 ```bash
 # Compilar
@@ -54,6 +62,9 @@ java -cp bin com.stella.core.App
 Se estiver usando VS Code com extensão Java:
 - Clique em **Run** (▶️) ao lado da classe `App.java`
 
+### Opção 3: Executavel (Recomendado)
+
+Simplesmente de dois cliques no app "Stella.exe"
 ---
 
 ## 🎯 Como Funciona
@@ -66,7 +77,7 @@ Se estiver usando VS Code com extensão Java:
 
 ### 👻 Sistema de Medo
 O jogador sente medo quando um inimigo está próximo:
-- Quanto mais proximo, mais medo
+- Quanto mais proximo e quanto mais tempo passa, mais medo 
 
 ### 💥 Colisões
 O sistema de colisão verifica se o jogador pode se mover em uma direção analisando os tiles:
@@ -212,7 +223,7 @@ Esta ordem é crítica para evitar null pointers!
 
 ## 📌 Próximas Melhorias Possíveis
 
-- [ ] Animações do jogador
+- [X] Animações do jogador
 - [ ] Mais tipos de inimigos
 - [ ] Sistema de itens
 - [ ] Efeitos de som

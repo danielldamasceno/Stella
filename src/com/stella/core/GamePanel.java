@@ -50,8 +50,14 @@ public class GamePanel extends JPanel implements Runnable{
     // Estados do jogo
     public static final int TITLE_STATE = 0;  // Tela de título
     public static final int PLAY_STATE = 1;   // Jogo em andamento
+    public static final int FADE_STATE = 4;
     public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
     public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
+
+    
+    private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
+    private long fadeStartTime = -1;   // quando o fade começou
+    private static final int FADE_DURATION = 2000; // 1 segundo em ms
 
     public int gameState = TITLE_STATE;
 
@@ -72,6 +78,7 @@ public class GamePanel extends JPanel implements Runnable{
     public TileManager tileManager = new TileManager(this);
     public CollisionChecker cChecker = new CollisionChecker(this);
     public Player player = new Player(this, key);
+    public HUD HUD = new HUD(this);
     AssetSetter aSetter = new AssetSetter(this);
 
     // Dificuldade do jogo, 1 = normal por padrão
@@ -149,7 +156,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         });
 
-        restartButton = createTexturedButton("Jogar Novamente", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+        restartButton = createTexturedButton("Voltar a tela inicial", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 restartGame();
@@ -269,6 +276,11 @@ public class GamePanel extends JPanel implements Runnable{
         this.repaint();
         this.requestFocusInWindow();
     }
+    public void startFadeToGameOver() {
+    if (gameState == PLAY_STATE) {
+        gameState = FADE_STATE;
+    }
+}
     /**
      * Loop principal do jogo (roda 60 vezes por segundo).
      */
@@ -297,7 +309,6 @@ public class GamePanel extends JPanel implements Runnable{
         if (gameState == PLAY_STATE) {
             // Atualiza o estado do jogador (colisão, medo)
             player.update();
-            
             // Move o jogador baseado nas teclas pressionadas
             player.andar();
             
@@ -327,7 +338,21 @@ public class GamePanel extends JPanel implements Runnable{
             // Guarda a posição da câmera no GamePanel para que o mundo use-a ao desenhar
             this.cameraX = cameraX;
             this.cameraY = cameraY;
-        }
+        } 
+
+        if (gameState == FADE_STATE) {
+            long now = System.currentTimeMillis();
+            if (fadeStartTime < 0) fadeStartTime = now;
+
+            float progress = (float)(now - fadeStartTime) / FADE_DURATION;
+            fadeAlpha = Math.min(progress, 1f);
+
+            if (progress >= 1f) {
+                fadeAlpha = 0f;
+                fadeStartTime = -1;
+                gameState = GAME_OVER_STATE;
+            }
+    }
     }
 
     /**
@@ -368,17 +393,40 @@ public class GamePanel extends JPanel implements Runnable{
             
             // Desenha o jogador
             player.Draw(g2);
-        } else if (gameState == GAME_OVER_STATE) {
-            // Fundo escuro semitransparente
-            g2.setColor(new Color(0, 0, 0, 180));
+            HUD.Draw(g2);
+
+        } else if (gameState == FADE_STATE) {
+            // Continua desenhando o jogo por baixo
+            tileManager.Draw(g2);
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] != null) obj[i].draw(g2, this);
+            }
+            player.Draw(g2);
+            HUD.Draw(g2);
+        
+            // Overlay preto que vai ficando mais opaco
+            int alpha = (int)(fadeAlpha * 255);
+            g2.setColor(new Color(0, 0, 0, alpha));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+
+        }else if (gameState == GAME_OVER_STATE) {
+            // Fundo escuro
+            g2.setColor(Color.BLACK);
             g2.fillRect(0, 0, screenWidth, screenHeight);
 
             // Título "Game Over"
             g2.setColor(Color.RED);
-            g2.setFont(new Font("Arial", Font.BOLD, 72));
+            g2.setFont(new Font("SansSerif", Font.BOLD, 72));
             String gameOver = "GAME OVER";
             int gw = g2.getFontMetrics().stringWidth(gameOver);
             g2.drawString(gameOver, screenWidth/2 - gw/2, screenHeight/2 - 50);
+            
+            //Subtítulo
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 18));
+            String subTextGameOver = "Barra de medo chegou ao maximo.";
+            int sw = g2.getFontMetrics().stringWidth(subTextGameOver);
+            g2.drawString(subTextGameOver, screenWidth/2 - sw/2, screenHeight/2 + 2);
 
             // Mostra o botão
             restartButton.setVisible(true);

@@ -22,6 +22,7 @@ public class AssetSetter {
      * Cria inimigos e define suas posições iniciais.
      */
     public void setObject(){
+        
         // Ally:
         gp.obj[0] = new Ally();
         // Define a posição inicial do aliado (em tiles do mundo)
@@ -45,7 +46,7 @@ public class AssetSetter {
 
         //fixos:
         gp.obj[1].WorldX = (29 - 2)* gp.tileSz + gp.tileSz/2;
-        gp.obj[1].WorldY = (20 - 2) * gp.tileSz + gp.tileSz/2;
+        gp.obj[1].WorldY = (21 - 2) * gp.tileSz + gp.tileSz/2;
         gp.obj[1].enemyType = "static";
 
         gp.obj[2].WorldX = (28 - 2)* gp.tileSz + gp.tileSz/2;
@@ -57,23 +58,27 @@ public class AssetSetter {
         gp.obj[3].enemyType = "persuer";
 
         //dinamicos:
-        for (int i = 4; i < qtdEnemy; i++) {
+        /*  
+            Não em estagio final
+            Forma a aleatorizar os inimigos deve ser baseada em tiles spawnaveis
+        */
+        for (int i = 4; i < qtdEnemy; i++) { 
             int numInimigo = RandomUtils.randInt(1, 3);
             switch (numInimigo) {
                 case 1:
                     if (gp.obj[i] == null) continue;
-                    gp.obj[i].WorldX = RandomUtils.randInt(5, 8) * gp.tileSz + gp.tileSz/2;
-                    gp.obj[i].WorldY = RandomUtils.randInt(8, 19) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldX = RandomUtils.randInt(5-2, 8-2) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldY = RandomUtils.randInt(8-2, 19-2) * gp.tileSz + gp.tileSz/2;
                     break;
                 case 2:
                     if (gp.obj[i] == null) continue;
-                    gp.obj[i].WorldX = RandomUtils.randInt(8, 46) * gp.tileSz + gp.tileSz/2;
-                    gp.obj[i].WorldY = RandomUtils.randInt(8, 11) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldX = RandomUtils.randInt(8-2, 46-2) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldY = RandomUtils.randInt(8-2, 11-2) * gp.tileSz + gp.tileSz/2;
                     break;
                 case 3:
                     if (gp.obj[i] == null) continue;
-                    gp.obj[i].WorldX = RandomUtils.randInt(32, 35) * gp.tileSz + gp.tileSz/2;
-                    gp.obj[i].WorldY = RandomUtils.randInt(35, 43) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldX = RandomUtils.randInt(32-2, 35-2) * gp.tileSz + gp.tileSz/2;
+                    gp.obj[i].WorldY = RandomUtils.randInt(35-2, 43-2) * gp.tileSz + gp.tileSz/2;
                     break;
             }
         }

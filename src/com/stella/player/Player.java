@@ -15,6 +15,9 @@ import javax.imageio.ImageIO;
  * Gerencia movimento, colisão e detecção de inimigos próximos.
  */
 public class Player extends Entity {
+
+    public static Enemy Enemy;
+
     // Referências para o painel do jogo e entrada do teclado
     GamePanel gp;
     KeyHandler key;
@@ -27,15 +30,18 @@ public class Player extends Entity {
     BufferedImage back1, back2, front1, front2, left1, left2, right1, right2;
     // Imagens idle (parado) para cada direção
     BufferedImage idleBack, idleFront, idleLeft, idleRight;
+
+    BufferedImage fearBarInit, fearbarMid, fearBarEnd, fearBarProgression;
+
     int animationCounter = 0;
     boolean isMoving = false;
     
     // Texto de status atual (ex: "Barra de medo: 50%")
-    String situation;
-    int winCondition = 0;
-    String inDist; // !!DEBUG!! Distância do inimigo mais próximo 
-
-    public static Enemy Enemy;
+    private String situation;
+    private int winCondition = 0;
+    /*  !!DEBUG!!
+    // private String inDist; //Distância do inimigo mais próximo
+        !!DEBUG!!   */  
 
     public Player(GamePanel gp, KeyHandler key){
         this.gp = gp;
@@ -72,7 +78,7 @@ public class Player extends Entity {
             gp.gameState = GamePanel.VICTORY_STATE; 
         }
         if (Fear.situation == 1.0) { 
-            gp.gameState = GamePanel.GAME_OVER_STATE;
+            gp.gameState = GamePanel.FADE_STATE;
         }
     }
 
@@ -148,7 +154,7 @@ public class Player extends Entity {
         Fear.distanceFear(minDist); // Atualiza o medo com base na distância
         Fear.updateFear(minDist); // Atualiza o medo com base na distância
         situation = Fear.getFearLevel(); // Atualiza o texto de status com o nível de medo atual
-        inDist = String.format("%.2f", minDist); // !!DEBUG!! Mostra a distância do inimigo mais próximo
+        //inDist = String.format("%.2f", minDist); // !!DEBUG!! Mostra a distância do inimigo mais próximo !!DEBUG!!
     }
 
     public void checkSafezone() {
@@ -170,7 +176,7 @@ public class Player extends Entity {
             double dist = Math.hypot(dx, dy); // distância euclidiana
             if (dist < minDisttoAlly) minDisttoAlly = dist;
 
-            if (minDisttoAlly < 300) {
+            if (minDisttoAlly < 150) {
                 Fear.situation = 0; // Zona segura, medo zerado
                 situation = Fear.getFearLevel(); // Atualiza o status
                 winCondition = 1;
@@ -179,6 +185,7 @@ public class Player extends Entity {
         }
         return; // Indica que não está na safezone
     }
+    
     /**
      * Carrega todas as imagens do jogador (movimento + idle) da pasta /res/MC.
      */
@@ -204,6 +211,9 @@ public class Player extends Entity {
         }
     }
 
+    public int getSituation() {
+        return Integer.parseInt(situation);
+    }
     /**
      * Desenha o jogador na tela com a imagem apropriada.
      * Mostra animação quando em movimento, pose idle quando parado.
@@ -256,12 +266,13 @@ public class Player extends Entity {
             g2.setColor(Color.PINK);
             g2.fillRect(screenX, screenY, gp.tileSz, gp.tileSz);
         }
-        
+        /*  // !!DEBUG!!
         // Mostra o status atual (nível de medo)
         if(situation != null){
             g2.setColor(Color.WHITE);
             g2.drawString(situation, 100, 100);
-            g2.drawString(inDist, 100, 120); // !!DEBUG!! Mostra a distância do inimigo mais próximo
+            g2.drawString(inDist, 100, 120); // Mostra a distância do inimigo mais próximo
         }
+           // !!DEBUG!!  */
     }
 }

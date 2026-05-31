@@ -1,0 +1,21 @@
+
+
+Version:	3.50
+CmdLine:	C:\Users\Daniel\Documents\VSCodeWorkspace\Stella\Stella.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	C:\Users\Daniel\Documents\VSCodeWorkspace\Stella\.
+Requires JDK:	Yes
+Requires 64-Bit: No
+Java min ver:	1.000.004
+Java max ver:	
+Substitute:	JAVA_HOME = C:\Program Files\Java\jdk-26\bin
+Substitute:	PATH = C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGW\bin;C:\Games\Ferramentas\NodeJS\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-26\bin;C:\Users\Daniel\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Java\jdk-26\bin
+JRE paths:	C:\Program Files\Java\jdk-26\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGW\bin;C:\Games\Ferramentas\NodeJS\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-26\bin;C:\Users\Daniel\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Java\jdk-26\bin
+Check launcher:	C:\Program Files\Java\jdk-26\bin\javaw.exe (OK)
+Check javac:	C:\Program Files\Java\jdk-26\bin\javac.exe (OK)
+Version string: 1.026.000_001 / 64-Bit (OK)
+Launcher:	C:\Program Files\Java\jdk-26\bin\javaw.exe
+Launcher args:	-jar "C:\Users\Daniel\Documents\VSCodeWorkspace\Stella\Stella.exe"
+Args length:	66/32768 chars
+Exit code:	0
