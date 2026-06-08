@@ -20,7 +20,7 @@ public class App {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         // Não permite redimensionar
-        window.setResizable(true);
+        window.setResizable(false);
         
         // Cria o painel do jogo
         GamePanel panel = new GamePanel();

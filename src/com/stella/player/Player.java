@@ -225,19 +225,59 @@ public class Player extends Entity {
         if(isMoving){
             // Animação de movimento
             animationCounter++;
-            boolean isFrame2 = (animationCounter / 15) % 2 == 1; // Alterna cada 20 frames
+            int frame = (animationCounter / 15) % 4; // Alterna cada 20 frames
             switch(direction){
                 case "top":
-                    image = isFrame2 ? back2 : back1;
+                    if(frame==0){
+                        image = back1;
+                    }else if(frame==1){
+                        image=idleBack;
+                    }else if(frame==2){
+                        
+                        image = back2;
+                    }else if(frame==3){
+                        image=idleBack;
+                    }
+                      
                     break;
                 case "bottom":
-                    image = isFrame2 ? front2 : front1;
+                    if(frame==0){
+                        image = front1;
+                    }else if(frame==1){
+                        image=idleFront;
+                        
+                    }else if(frame==2){
+                        image = front2;
+                    }else if(frame==3){
+                        image=idleFront;
+                        
+                    }
                     break;
                 case "left":
-                    image = isFrame2 ? left2 : left1;
+                    if(frame==0){
+                        image = left1;
+                    }else if(frame==1){
+                        image=idleLeft;
+                        
+                    }else if(frame==2){
+                        image = left2;
+                    }else if(frame==3){
+                        image=idleLeft;
+                        
+                    }
                     break;
                 case "right":
-                    image = isFrame2 ? right2 : right1;
+                    if(frame==0){
+                        image = right1;
+                    }else if(frame==1){
+                        image=idleRight;
+                        
+                    }else if(frame==2){
+                        image = right2;
+                    }else if(frame==3){
+                        image=idleRight;
+                        
+                    }
                     break;
             }
         } else {

@@ -81,8 +81,8 @@ public class GamePanel extends JPanel implements Runnable{
     public HUD HUD = new HUD(this);
     AssetSetter aSetter = new AssetSetter(this);
 
-    // Dificuldade do jogo, 1 = normal por padrão
-    public static int dificulty = 1;
+    // Dificuldade do jogo, 0 = easy por padrão
+    public static int dificulty = 0;
 
     // Array de objetos do mundo (inimigos, itens, etc)
     public superObject obj[] = new superObject[12]; //Limite de objetos
