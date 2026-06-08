@@ -75,7 +75,12 @@ public class Player extends Entity {
         checkSafezone();
 
         if(winCondition == 1) {
-            gp.gameState = GamePanel.VICTORY_STATE; 
+            gp.FASE_STATE=2;
+            screenX=gp.screenWidth/2;
+            screenY=gp.screenHeight/2;
+            worldX = screenX+800;
+            worldY=screenY+400;
+            winCondition=0;
         }
         if (Fear.situation == 1.0) { 
             gp.gameState = GamePanel.FADE_STATE;

@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.stella.player.Fear;
@@ -53,8 +54,7 @@ public class GamePanel extends JPanel implements Runnable{
     public static final int FADE_STATE = 4;
     public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
     public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
-
-    
+    public int FASE_STATE=1;
     private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
     private long fadeStartTime = -1;   // quando o fade começou
     private static final int FADE_DURATION = 2000; // 1 segundo em ms
@@ -70,6 +70,7 @@ public class GamePanel extends JPanel implements Runnable{
     JButton hardButton;
     JButton backButton;
     JButton restartButton;
+    JButton nextFaseButton;
     BufferedImage buttonTexture;
     
     // Componentes principais do jogo
@@ -162,6 +163,12 @@ public class GamePanel extends JPanel implements Runnable{
                 restartGame();
         }
         });
+        nextFaseButton = createTexturedButton("Ir para a próxima fase->", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                restartGame();
+        }
+        });
         
         
 
@@ -172,9 +179,11 @@ public class GamePanel extends JPanel implements Runnable{
         this.add(hardButton);
         this.add(backButton);
         this.add(restartButton);
+        this.add(nextFaseButton);
 
         showOptionButtons(false);
         restartButton.setVisible(false);
+        nextFaseButton.setVisible(false);
     }
 
     private void showOptionButtons(boolean visible) {
@@ -240,11 +249,11 @@ public class GamePanel extends JPanel implements Runnable{
         this.remove(optionsButton);
         this.revalidate();
         this.repaint();
-
+        
         // Muda para o estado de jogo
         gameState = PLAY_STATE;
         this.requestFocusInWindow(); // Garante foco no painel após iniciar
-
+        
         // Inicia a thread se não estiver rodando
         if (GameThread == null) {
             startGameThread();
@@ -265,6 +274,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         // Esconde o botão e volta para o título
         restartButton.setVisible(false);
+        nextFaseButton.setVisible(false);
         gameState = TITLE_STATE;
 
         // Readiciona os botões do menu (foram removidos no startGame)
@@ -381,7 +391,16 @@ public class GamePanel extends JPanel implements Runnable{
             }
 
         } else if (gameState == PLAY_STATE) {
+            if(FASE_STATE == 1 ){
+            tileManager.map="map.txt";
+            }else if(FASE_STATE==2){
+                tileManager.map="map2.txt";
+                tileManager.LoadMap();
+                
+
+            }
             // Desenha o mapa
+            
             tileManager.Draw(g2);
             
             // Desenha os objetos do mundo (inimigos, itens, aliados)
@@ -441,7 +460,7 @@ public class GamePanel extends JPanel implements Runnable{
             int ew = g2.getFontMetrics().stringWidth(ending);
             g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
 
-            restartButton.setVisible(true);
+            nextFaseButton.setVisible(true);
         }
     }
 

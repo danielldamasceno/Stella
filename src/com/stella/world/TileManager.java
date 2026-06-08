@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
  */
 public class TileManager {
     GamePanel gp;
-    
+    public String map;
     // Array com todos os tipos de tiles disponíveis
     public Tile[] tile;
     
@@ -32,9 +32,10 @@ public class TileManager {
         
         // Carrega as imagens de todos os tiles
         getTileImage();
-        
+        map="map.txt";
         // Carrega o mapa do arquivo
         LoadMap();
+        
     }
 
     /**
@@ -80,8 +81,7 @@ public class TileManager {
      * Cada linha tem números separados por espaço, cada número é um índice de tile.
      */
     public void LoadMap() {
-        try (InputStream is = getClass().getResourceAsStream("/res/map.txt")) {
-
+        try (InputStream is = getClass().getResourceAsStream("/res/"+map)) {
             if (is == null) {
                 System.err.println("Arquivo de mapa não encontrado");
                 return;
