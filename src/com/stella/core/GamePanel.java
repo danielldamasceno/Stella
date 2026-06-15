@@ -51,12 +51,17 @@ public class GamePanel extends JPanel implements Runnable{
     // Estados do jogo
     public static final int TITLE_STATE = 0;  // Tela de título
     public static final int PLAY_STATE = 1;   // Jogo em andamento
+    public static final int DIALOG_STATE = 5;
+    public static final int TRANS_STATE = 6;
     public static final int FADE_STATE = 4;
     public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
     public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
+
     public int FASE_STATE=1;
     private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
     private long fadeStartTime = -1;   // quando o fade começou
+    private String[] dialogue = new String[6];
+    private int currentDialogIndex = 0;
     private static final int FADE_DURATION = 2000; // 1 segundo em ms
 
     public int gameState = TITLE_STATE;
@@ -166,7 +171,7 @@ public class GamePanel extends JPanel implements Runnable{
         nextFaseButton = createTexturedButton("Ir para a próxima fase->", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                restartGame();
+                nextLevel();
         }
         });
         
@@ -181,6 +186,7 @@ public class GamePanel extends JPanel implements Runnable{
         this.add(restartButton);
         this.add(nextFaseButton);
 
+        setDialog();
         showOptionButtons(false);
         restartButton.setVisible(false);
         nextFaseButton.setVisible(false);
@@ -286,6 +292,7 @@ public class GamePanel extends JPanel implements Runnable{
         this.repaint();
         this.requestFocusInWindow();
     }
+
     public void startFadeToGameOver() {
     if (gameState == PLAY_STATE) {
         gameState = FADE_STATE;
@@ -319,6 +326,10 @@ public class GamePanel extends JPanel implements Runnable{
         if (gameState == PLAY_STATE) {
             // Atualiza o estado do jogador (colisão, medo)
             player.update();
+            if (player.checkSafezone()) {
+                gameState = DIALOG_STATE;
+                currentDialogIndex = 0;
+            }
             // Move o jogador baseado nas teclas pressionadas
             player.andar();
             
@@ -348,7 +359,27 @@ public class GamePanel extends JPanel implements Runnable{
             // Guarda a posição da câmera no GamePanel para que o mundo use-a ao desenhar
             this.cameraX = cameraX;
             this.cameraY = cameraY;
-        } 
+
+        }  
+   
+        if (gameState == DIALOG_STATE) {
+            if (key.enterPressed) {
+                key.enterPressed = false;
+                currentDialogIndex++;
+                if (currentDialogIndex >= dialogue.length) {
+                    currentDialogIndex = 0;
+                    if (FASE_STATE == 1) {
+                        gameState = TRANS_STATE;
+                    } else if (FASE_STATE == 2) {
+                        gameState = VICTORY_STATE;
+                    }
+                }
+            }
+        }
+
+        if (gameState == TRANS_STATE) {
+                nextLevel();
+            }
 
         if (gameState == FADE_STATE) {
             long now = System.currentTimeMillis();
@@ -414,6 +445,30 @@ public class GamePanel extends JPanel implements Runnable{
             player.Draw(g2);
             HUD.Draw(g2);
 
+        } else if (gameState == DIALOG_STATE) {
+
+            tileManager.Draw(g2);
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] != null) obj[i].draw(g2, this);
+            }
+            player.Draw(g2);
+            HUD.Draw(g2);
+
+            // Caixa de diálogo
+            g2.setColor(new Color(0, 0, 0, 200));
+            g2.fillRect(50, screenHeight - 150, screenWidth - 100, 100);
+
+            // Texto de diálogo
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
+            String dialogText = dialogue[currentDialogIndex];
+            String[] lines = dialogText.split("\\n");
+            int lineHeight = 22;
+            int startY = screenHeight - 110;
+            for (int i = 0; i < lines.length; i++) {
+                g2.drawString(lines[i], 70, startY + i * lineHeight);
+            }
+
         } else if (gameState == FADE_STATE) {
             // Continua desenhando o jogo por baixo
             tileManager.Draw(g2);
@@ -447,10 +502,9 @@ public class GamePanel extends JPanel implements Runnable{
             int sw = g2.getFontMetrics().stringWidth(subTextGameOver);
             g2.drawString(subTextGameOver, screenWidth/2 - sw/2, screenHeight/2 + 2);
 
-            // Mostra o botão
             restartButton.setVisible(true);
 
-        } else if (gameState == VICTORY_STATE) {
+        } else if (gameState == TRANS_STATE) {
             g2.setColor(new Color(0, 0, 0, 200));
             g2.fillRect(0, 0, screenWidth, screenHeight);
 
@@ -459,9 +513,47 @@ public class GamePanel extends JPanel implements Runnable{
             String ending = "Você encontrou a Professora!";
             int ew = g2.getFontMetrics().stringWidth(ending);
             g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
+            nextFaseButton.setVisible(true); 
 
-            nextFaseButton.setVisible(true);
+        } else if (gameState == VICTORY_STATE) {
+            g2.setColor(new Color(0, 0, 0, 200));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+
+            g2.setColor(Color.GREEN);
+            g2.setFont(new Font("Arial", Font.BOLD, 56));
+            String ending = "Você reencontrou a Professora!";
+            int ew = g2.getFontMetrics().stringWidth(ending);
+            g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
+            restartButton.setVisible(true);
         }
+    }
+
+    public void setDialog() {
+        dialogue[0] = "Ola Stella!";
+        dialogue[1] = "Por que voce esta aqui?";
+        dialogue[2] = "Parece tão assustada. \nO que aconteceu?";
+        dialogue[3] = "...";
+        dialogue[4] = "Venha, vou te levar para um lugar calmo.";
+        dialogue[5] = "Para conversarmos, Ok?";
+    }
+
+    public void nextLevel() {
+        FASE_STATE = 2;
+        
+        //redefine posição do player
+        resetPosition();
+
+        nextFaseButton.setVisible(false);
+        setupGame();
+        startGame();
+    }
+
+    public void resetPosition() {
+        player.screenX = screenWidth / 2 - (tileSz / 2);
+        player.screenY = screenHeight / 2 - (tileSz / 2);
+        player.worldX = player.screenX + 600;
+        player.worldY = player.screenY + 1200;
+        player.direction = "bottom";
     }
 
     /**

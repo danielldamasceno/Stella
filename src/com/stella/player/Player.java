@@ -38,7 +38,7 @@ public class Player extends Entity {
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     private String situation;
-    private int winCondition = 0;
+    //private int winCondition = 0;
     /*  !!DEBUG!!
     // private String inDist; //Distância do inimigo mais próximo
         !!DEBUG!!   */  
@@ -74,16 +74,17 @@ public class Player extends Entity {
         // Checa proximidade com aliados (safezone)
         checkSafezone();
 
-        if(winCondition == 1) {
+        /*if(checkSafezone() == true) {
             gp.FASE_STATE=2;
             screenX=gp.screenWidth/2;
             screenY=gp.screenHeight/2;
             worldX = screenX+800;
             worldY=screenY+400;
-            winCondition=0;
-        }
+            //winCondition=0;
+        }*/
+
         if (Fear.situation == 1.0) { 
-            gp.gameState = GamePanel.FADE_STATE;
+            // debug gp.gameState = GamePanel.FADE_STATE;
         }
     }
 
@@ -162,7 +163,7 @@ public class Player extends Entity {
         //inDist = String.format("%.2f", minDist); // !!DEBUG!! Mostra a distância do inimigo mais próximo !!DEBUG!!
     }
 
-    public void checkSafezone() {
+    public boolean checkSafezone() {
 
         double minDisttoAlly = Double.MAX_VALUE;
         double playerCenterX = worldX + gp.tileSz / 2.0;
@@ -184,11 +185,11 @@ public class Player extends Entity {
             if (minDisttoAlly < 150) {
                 Fear.situation = 0; // Zona segura, medo zerado
                 situation = Fear.getFearLevel(); // Atualiza o status
-                winCondition = 1;
-                return; // Indica que está na safezone
+                //winCondition = 1;
+                return true;
             }
         }
-        return; // Indica que não está na safezone
+        return false;
     }
     
     /**

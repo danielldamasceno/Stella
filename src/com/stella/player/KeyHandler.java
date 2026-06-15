@@ -9,7 +9,7 @@ import java.awt.event.KeyListener;
  */
 public class KeyHandler implements KeyListener{
     // Estados de cada direção (pressionado = true, solto = false)
-    public boolean leftPressed, rightPressed, upPressed, downPressed;
+    public boolean leftPressed, rightPressed, upPressed, downPressed, enterPressed;
     
     /**
      * Detecta quando uma tecla é pressionada.
@@ -31,6 +31,9 @@ public class KeyHandler implements KeyListener{
         if(code == KeyEvent.VK_W || code == KeyEvent.VK_UP){
             this.upPressed = true;
         }
+        if(code == KeyEvent.VK_ENTER){
+            this.enterPressed = true;
+        }
     }
 
     /**
@@ -51,6 +54,9 @@ public class KeyHandler implements KeyListener{
         }
         if(code == KeyEvent.VK_W || code == KeyEvent.VK_UP){
             this.upPressed = false;
+        }
+        if(code == KeyEvent.VK_ENTER){
+            this.enterPressed = false;
         }
     }
 
