@@ -34,7 +34,8 @@ public class Player extends Entity {
     BufferedImage fearBarInit, fearbarMid, fearBarEnd, fearBarProgression;
 
     int animationCounter = 0;
-    boolean isMoving = false;
+    public boolean isMoving = false;
+    public boolean autoWalk = false;
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     private String situation;
@@ -62,6 +63,23 @@ public class Player extends Entity {
         // Carrega as imagens do jogador
         getPlayerImages();
     }
+
+    public void setStartPosition(int faseState) {
+        screenX = gp.screenWidth / 2 - (gp.tileSz / 2);
+        screenY = gp.screenHeight / 2 - (gp.tileSz / 2);
+
+        switch (faseState) {
+            case 1: 
+                worldX = 5 * gp.tileSz;
+                worldY = 5 * gp.tileSz;
+                break;
+            case 2: 
+                worldX = 10 * gp.tileSz;
+                worldY = 10 * gp.tileSz;
+                break;
+        }
+        direction = "bottom";
+    } 
 
     /**
      * Atualiza o estado do jogador a cada frame.
@@ -93,9 +111,17 @@ public class Player extends Entity {
      * Só se move se não colidiu com nada.
      */
     public void andar(){
+
+        if (autoWalk) {
+            worldX += 1.4; 
+            direction = "right";
+            isMoving = true;
+            return; // ignora input do teclado
+        }
+
         // Verifica se alguma tecla de movimento está pressionada
         isMoving = key.leftPressed || key.rightPressed || key.upPressed || key.downPressed;
-        
+
         // Se não colidiu, pode se mover
         if(collisonOn == false){
             if(key.leftPressed){

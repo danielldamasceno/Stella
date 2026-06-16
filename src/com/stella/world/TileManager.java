@@ -24,22 +24,22 @@ public class TileManager {
     public TileManager(GamePanel gp) {
         this.gp = gp;
         
-        // Cria array para 71 tipos diferentes de tiles
-        tile = new Tile[71];
+        // Cria array para 16 tipos diferentes de tiles
+        tile = new Tile[16];
         
         // Cria o mapa com o tamanho do mundo
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
         
         // Carrega as imagens de todos os tiles
         getTileImage();
-        map="map.txt";
+        map="corredor.txt";
         // Carrega o mapa do arquivo
         LoadMap();
         
     }
 
     /**
-     * Carrega as imagens de todos os tiles de 0 a 70.
+     * Carrega as imagens de todos os tiles de 0 a 15.
      * As imagens estão em /res/tile/tile000.png, tile001.png, etc.
      */
     public void getTileImage(){
@@ -81,7 +81,7 @@ public class TileManager {
      * Cada linha tem números separados por espaço, cada número é um índice de tile.
      */
     public void LoadMap() {
-        try (InputStream is = getClass().getResourceAsStream("/res/"+map)) {
+        try (InputStream is = getClass().getResourceAsStream("/res/levels/" + map)) {
             if (is == null) {
                 System.err.println("Arquivo de mapa não encontrado");
                 return;
@@ -90,18 +90,14 @@ public class TileManager {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             int row = 0;
-
             while (row < gp.maxWorldRow) {
                 String line = br.readLine();
 
                 if (line == null) {
                     break;
                 }
-
                 // Pula linhas vazias
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
+                if (line.trim().isEmpty()) continue;
 
                 // Separa os números da linha
                 String[] numbers = line.trim().split("\\s+");
@@ -111,12 +107,10 @@ public class TileManager {
                     int num = Integer.parseInt(numbers[col]);
                     mapTileNum[col][row] = num;
                 }
-
                 row++;
             }
-
+            
             br.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
