@@ -1,2 +1,23 @@
+# Built artifacts
 Stella.jar
+Stella.exe
+*.class
+bin/
+
+# Generated files
+*.log
+*.tmp
+*.cache
+
+# IDE/editor files
+.vscode/
+*.iml
+.idea/
+
+# Resource and build outputs
+*.jar
+*.war
+*.ear
+
+# Project metadata
 Stella.xml
