@@ -10,7 +10,7 @@ public class Fear {
     public static double situation = 0;
 
     /* Parâmetros */
-    private static double distanceTillFear = 420;
+    private static double distanceTillFear = 380;
     private static double BASE_INCREASE = 0.0001;    // subida mínima por atualização
     private static double MAX_EXTRA = 0.04;       // extra quando a distância é 0
     private static double DECREASE_RATE = 0.02;   // descida fixa por atualização quando longe
@@ -28,7 +28,7 @@ public class Fear {
    public static void setFearDificult(int dificulty) {
         switch (dificulty) {
             case 0: //facil
-                distanceTillFear = 410;
+                distanceTillFear = 380;
                 BASE_INCREASE = 0.00005; // taxa de aumento
                 MAX_EXTRA = 0.018;       // aumento extra
                 DECREASE_RATE = 0.03;    // taxa de diminuição

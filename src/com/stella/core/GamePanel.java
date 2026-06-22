@@ -1,147 +1,151 @@
-        package com.stella.core;
-
-        import java.awt.Color;
-        import java.awt.Dimension;
-        import java.awt.Font;
-        import java.awt.Graphics;
-        import java.awt.Graphics2D;
-        import java.awt.Rectangle;
-        import java.awt.TexturePaint;
-        import java.awt.image.BufferedImage;
-        import java.awt.event.ActionEvent;
-        import java.awt.event.ActionListener;
-        import java.io.IOException;
-
-        import javax.imageio.ImageIO;
-        import javax.swing.JButton;
-        import javax.swing.JPanel;
-
-        import com.stella.player.Fear;
-        import com.stella.player.Player;
-        import com.stella.player.KeyHandler;
-        import com.stella.world.TileManager;
-        import com.stella.entities.Enemy;
-        import com.stella.entities.superObject;
-        import com.stella.physics.CollisionChecker;
-        import com.stella.assets.AssetSetter;
+    package com.stella.core;
+    import java.awt.Color;
+    import java.awt.Dimension;
+    import java.awt.Font;
+    import java.awt.Graphics;
+    import java.awt.Graphics2D;
+    import java.awt.Rectangle;
+    import java.awt.TexturePaint;
+    import java.awt.image.BufferedImage;
+    import java.awt.event.ActionEvent;
+    import java.awt.event.ActionListener;
+    import java.io.IOException;
+    import javax.imageio.ImageIO;
+    import javax.swing.JButton;
+    import javax.swing.JPanel;   
+    import com.stella.player.Fear;
+    import com.stella.player.Player;
+    import com.stella.player.KeyHandler;
+    import com.stella.world.SpawnManager;
+    import com.stella.world.TileManager;
+    import com.stella.entities.Enemy;
+    import com.stella.entities.superObject;
+    import com.stella.physics.CollisionChecker;
+    import com.stella.assets.AssetSetter;
 
         /**
          * Painel principal do jogo.
          * Gerencia toda a lógica de jogo, renderização e loop do jogo.
          */
-        public class GamePanel extends JPanel implements Runnable{
+    public class GamePanel extends JPanel implements Runnable{
             // Configurações de câmera e mundo
-            final int ogTileSz = 24;           // Tamanho original dos sprites
-            final int scale = 3;               // Escala para ampliação
-            public final int tileSz = ogTileSz*scale; // Tamanho final dos tiles (72px)
-            final int maxScreenCol = 20;       // Quantas colunas de tiles cabem na tela
-            final int maxScreenRow = 11;       // Quantas linhas de tiles cabem na tela
+        final int ogTileSz = 24;           // Tamanho original dos sprites
+        final int scale = 3;               // Escala para ampliação
+        public final int tileSz = ogTileSz*scale; // Tamanho final dos tiles (72px)
+        final int maxScreenCol = 20;       // Quantas colunas de tiles cabem na tela
+        final int maxScreenRow = 11;       // Quantas linhas de tiles cabem na tela
 
             // Tamanho do mundo
-            public final int maxWorldCol = 50;     // Quantas colunas de tiles no mundo
-            public final int maxWorldRow = 50;     // Quantas linhas de tiles no mundo
-            public final int worldWidth = maxWorldCol * tileSz;
-            public final int worldHeight = maxWorldRow * tileSz;
+        public final int maxWorldCol = 50;     // Quantas colunas de tiles no mundo
+        public final int maxWorldRow = 50;     // Quantas linhas de tiles no mundo
+        public final int worldWidth = maxWorldCol * tileSz;
+        public final int worldHeight = maxWorldRow * tileSz;
 
             // Tamanho da tela em pixels
-            public final int screenWidth = tileSz * maxScreenCol;  // 1440px
-            public final int screenHeight = tileSz * maxScreenRow; // 864px
+        public final int screenWidth = tileSz * maxScreenCol;  // 1440px
+        public final int screenHeight = tileSz * maxScreenRow; // 864px
 
-            // Estados do jogo
-            public static final int TITLE_STATE = 0;  // Tela de título
-            public static final int PLAY_STATE = 1;   // Jogo em andamento
-            public static final int DIALOG_STATE = 5;
-            public static final int TRANS_STATE = 6;
-            public static final int FADE_STATE = 4;
-            public static final int FADE_IN_STATE = 7;
-            public static final int FADE_OUT_STATE = 8;
+        // Estados do jogo
+        public static final int TITLE_STATE = 0;  // Tela de título
+        public static final int PLAY_STATE = 1;   // Jogo em andamento
+        public static final int DIALOG_STATE = 5;
+        public static final int TRANS_STATE = 6;
+        public static final int FADE_STATE = 4;
+        public static final int FADE_IN_STATE = 7;
+        public static final int FADE_OUT_STATE = 8;
+        public static final int LOADING_STATE = 9;
 
-            //Condições win/lose
-            public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
-            public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
+        //Condições win/lose
+        public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
+        public static final int VICTORY_STATE = 3;    // Jogo acabou (vitória)
 
-            public int FASE_STATE = 1;
-            private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
-            private long fadeStartTime = -1;   // quando o fade começou
-            private String[] dialogue = new String[6];
-            private int currentDialogIndex = 0;
-            private static final int FADE_DURATION = 2000; // 1 segundo em ms
-
-            public int gameState = TITLE_STATE;
-
-            // Thread do jogo (para rodar o loop em paralelo)
-            private volatile boolean running;
-
-            Thread GameThread;
-            JButton startButton;
-            JButton optionsButton;
-            JButton easyButton;
-            JButton normalButton;
-            JButton hardButton;
-            JButton backButton;
-            JButton restartButton;
-            JButton nextFaseButton;
-            BufferedImage buttonTexture;
-            BufferedImage backgroundImage;
             
-            // Componentes principais do jogo
-            public KeyHandler key = new KeyHandler();
-            public TileManager tileManager = new TileManager(this);
-            public CollisionChecker cChecker = new CollisionChecker(this);
-            public Player player = new Player(this, key);
-            public HUD HUD = new HUD(this);
-            public AssetSetter aSetter = new AssetSetter(this);
 
-            // Dificuldade do jogo, 0 = easy por padrão
-            public static int dificulty = 0;
+        public int FASE_STATE = 2;
+        private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
+        private long fadeStartTime = -1;   // quando o fade começou
+        private String[] dialogue = new String[6];
+        private int currentDialogIndex = 0;
+        private long loadingStartTime = -1;
+        private static final int LOADING_MIN_DURATION = 750; // ms, dentro do range 0.5-1s que você pediu
+        private boolean levelLoaded = false;
+        private static final int FADE_DURATION = 600; // 1 segundo em ms
 
-            // Array de objetos do mundo (inimigos, itens, etc)
-            public superObject obj[] = new superObject[12]; //Limite de objetos
+        public int gameState = TITLE_STATE;
 
-            // Posição da câmera (coordenada do mundo que aparece no canto superior-esquerdo)
-            public int cameraX = 0;
-            public int cameraY = 0;
+        // Thread do jogo (para rodar o loop em paralelo)
+        private volatile boolean running;
 
-            public GamePanel(){
+        Thread GameThread;
+        JButton startButton;
+        JButton optionsButton;
+        JButton easyButton;
+        JButton normalButton;
+        JButton hardButton;
+        JButton backButton;
+        JButton restartButton;
+        JButton nextFaseButton;
+        BufferedImage buttonTexture;
+        BufferedImage backgroundImage;
+        
+        // Componentes principais do jogo
+        public KeyHandler key = new KeyHandler();
+        public TileManager tileManager = new TileManager(this);
+        public SpawnManager spawnM = new SpawnManager(this);
+        public CollisionChecker cChecker = new CollisionChecker(this);
+        public Player player = new Player(this, key);
+        public HUD HUD = new HUD(this);
+        public AssetSetter aSetter = new AssetSetter(this);
 
-                this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-                this.setBackground(Color.BLACK);
-                this.setDoubleBuffered(true); // Evita piscar com buffer duplo
-                this.setLayout(null);
-                this.addKeyListener(key);     // Adiciona o detector de teclado
-                this.setFocusable(true);      // Permite receber eventos de teclado
-                this.requestFocusInWindow();  // Pede foco para capturar teclas
-                
-                // Tenta carregar a imagem de fundo do menu e a textura dos botões
-                try {
-                    backgroundImage = ImageIO.read(getClass().getResourceAsStream("/res/menu.png"));
-                    buttonTexture = ImageIO.read(getClass().getResourceAsStream("/res/tile/wall2.png"));
-                } catch (IOException e) {
-                    System.out.println("Erro ao carregar background ou textura de botões: " + e.getMessage());
+        // Dificuldade do jogo, 0 = easy por padrão
+        public static int dificulty = 0;
+
+        // Array de objetos do mundo (inimigos, itens, etc)
+        public superObject obj[] = new superObject[50]; //Limite de objetos
+
+        // Posição da câmera (coordenada do mundo que aparece no canto superior-esquerdo)
+        public int cameraX = 0;
+        public int cameraY = 0;
+
+        public GamePanel(){
+            this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+            this.setBackground(Color.BLACK);
+            this.setDoubleBuffered(true); // Evita piscar com buffer duplo
+            this.setLayout(null);
+            this.addKeyListener(key);     // Adiciona o detector de teclado
+            this.setFocusable(true);      // Permite receber eventos de teclado
+            this.requestFocusInWindow();  // Pede foco para capturar teclas
+            
+            // Tenta carregar a imagem de fundo do menu e a textura dos botões
+            try {
+                backgroundImage = ImageIO.read(getClass().getResourceAsStream("/res/menu.png"));
+                buttonTexture = ImageIO.read(getClass().getResourceAsStream("/res/tile/wall2.png"));
+            } catch (IOException e) {
+                System.out.println("Erro ao carregar background ou textura de botões: " + e.getMessage());
+            }
+            
+            // Cria e posiciona o botão de iniciar e de opções
+            startButton = createTexturedButton("Começar o jogo", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    startGameWithDialogue();
                 }
-                
-                // Cria e posiciona o botão de iniciar e de opções
-                startButton = createTexturedButton("Começar o jogo", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        startDialogue();
-                    }
-                });
-                optionsButton = createTexturedButton("Opções", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        showOptionButtons(true);
-                    }
-                });
+            });
+            optionsButton = createTexturedButton("Opções", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showOptionButtons(true);
+                }
+            });
 
-                //Botões de dificuldade 
-                easyButton = createTexturedButton("Fácil", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dificulty = 0;
-                        Fear.setFearDificult(dificulty);
-                        showOptionButtons(false);
-                    }
+            //Botões de dificuldade 
+            easyButton = createTexturedButton("Fácil", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dificulty = 0;
+                    Fear.setFearDificult(dificulty);
+                    showOptionButtons(false);
+                }
                 });
 
                 normalButton = createTexturedButton("Normal", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
@@ -178,7 +182,7 @@
                 }
                 });
                 /** Chama "nextLevel" */
-                nextFaseButton = createTexturedButton("Ir para a próxima fase->", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
+                nextFaseButton = createTexturedButton("Ir para próxima fase", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         nextLevel();
@@ -275,13 +279,15 @@
             public void setupGame() {
                 if(FASE_STATE == 1) {
                         tileManager.map = "corredor.txt";
-                    } else if (FASE_STATE == 2){
+                    } else if (FASE_STATE == 2) {
                         tileManager.map = "mapSchool.txt";
+                    } else if (FASE_STATE == 3) {
+                        tileManager.map = "map2.txt";
                     }
 
                 tileManager.LoadMap();
                 player.setStartPosition(FASE_STATE);
-                aSetter.setObject();
+                aSetter.setObject(FASE_STATE);
             }
             public void setDialog() {
                 dialogue[0] = "Ola Stella!";
@@ -313,7 +319,7 @@
                 }
             }   
             
-            public void startDialogue() {
+            public void startGameWithDialogue() {
 
                 this.remove(startButton);
                 this.remove(optionsButton);
@@ -345,9 +351,32 @@
                 }
                 requestFocusInWindow();
             }
+            private void loadingState() {
+                long now = System.currentTimeMillis();
+                if (loadingStartTime < 0) loadingStartTime = now;
+
+                // Carrega a fase só uma vez, no primeiro frame deste estado
+                if (!levelLoaded) {
+                    FASE_STATE++;
+                    setupGame();
+                    player.autoWalk = false;
+                    player.isMoving = false;
+                    updateCam();
+                    levelLoaded = true;
+                }
+            
+                long elapsed = now - loadingStartTime;
+                if (elapsed >= LOADING_MIN_DURATION) {
+                    loadingStartTime = -1;
+                    fadeAlpha = 1f;
+                    fadeStartTime = -1;
+                    gameState = FADE_OUT_STATE;
+                }
+            }           
             public void restartGame() {
                 Fear.situation = 0;
                 Fear.distIn = 0;
+                FASE_STATE = 1;
 
                 // Recria o jogador do zero
                 player = new Player(this, key);
@@ -412,6 +441,7 @@
                 this.cameraY = cameraY;
             }
             public void teleportPlayer() {
+                if (FASE_STATE != 1) return;
                 int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
                 int tilePortalEntrada = 2; // ← tile onde ela reaparece (ajuste aqui)
 
@@ -432,61 +462,75 @@
             
             private void playState() {
                 // Atualiza o estado do jogador (colisão, medo)
-                    player.update();
-                    player.autoWalk = false; // Reseta o autoWalk a cada frame, só ativa quando necessário
+                player.update();
+                player.autoWalk = false; // Reseta o autoWalk
 
-                    if (FASE_STATE == 1) {
-
-                        /*int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
-                        int tilePortalEntrada = 2; // ← tile onde ela reaparece (ajuste aqui)
-
-                        int fim = tilePortalSaida * tileSz;
-                        int inicio = tilePortalEntrada * tileSz;
-
-                        if (player.worldX >= fim) {
-                            int offset = player.worldX - fim; // quanto passou do portal
-                            player.worldX = inicio + offset;  // mantém o excesso para não travar
-                        
-                            for (superObject o : obj) {
-                                if (o != null && o.ally) {
-                                    o.WorldX = o.WorldX - fim + inicio;
-                                }
-                            }
-                        }*/
-                    }
-
-                    if (FASE_STATE == 2) {
-                        if (player.checkSafezone()) {
-                            gameState = DIALOG_STATE;
-                            currentDialogIndex = 0;
-                        }
-
-                        for (int i = 0; i < obj.length; i++) {
-                            if (obj[i] instanceof Enemy) {
-                                ((Enemy) obj[i]).update(player);
-                            }
-                        }
-                    }
-
-                    // Move o jogador baseado nas teclas pressionadas
-                    player.andar();
-                    updateCam(); // Atualiza a posição da câmera para seguir o jogador
+                if (FASE_STATE == 1) {
+                    /*int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
+                    int tilePortalEntrada = 2; // ← tile onde ela reaparece (ajuste aqui)
+                    int fim = tilePortalSaida * tileSz;
+                    int inicio = tilePortalEntrada * tileSz;
+                    if (player.worldX >= fim) {
+                        int offset = player.worldX - fim; // quanto passou do portal
+                        player.worldX = inicio + offset;  // mantém o excesso para não travar
                     
+                        for (superObject o : obj) {
+                            if (o != null && o.ally) {
+                                o.WorldX = o.WorldX - fim + inicio;
+                            }
+                        }
+                    }*/
+                }
+
+                if (FASE_STATE == 2) {
+                    if (player.checkSafezone()) {
+                        gameState = FADE_IN_STATE;
+                        currentDialogIndex = 0;
+                    }
+                    for (int i = 0; i < obj.length; i++) {
+                        if (obj[i] instanceof Enemy) {
+                            ((Enemy) obj[i]).update(player);
+                        }
+                    }
+                }
+
+                if (FASE_STATE == 3) {
+                    if (player.checkSafezone()) {
+                        gameState = DIALOG_STATE;
+                        currentDialogIndex = 0;
+                    }
+                    for (int i = 0; i < obj.length; i++) {
+                        if (obj[i] instanceof Enemy) {
+                            ((Enemy) obj[i]).update(player);
+                        }
+                    }
+                }
+                
+                player.andar(false);
+                updateCam(); 
+                
             }
             private void dialogState() {
 
                 player.update();
-                player.andar();
+                player.andar(true);
                 updateCam();
                 teleportPlayer();
 
                 if (FASE_STATE == 1) {
                     player.autoWalk = true;
+                    player.andar(false);
                     for (superObject o : obj) {
                         if (o != null && o.ally) {
                             o.WorldX += 2;
                         }
                     }
+                } else if (FASE_STATE == 2) {
+                    player.autoWalkDirection = "left";
+                    player.autoWalk = true;
+                    player.andar(false);
+                } else if (FASE_STATE == 3) {
+                    player.andar(true);
                 }
 
                 if (key.enterPressed) {
@@ -497,6 +541,8 @@
                         if (FASE_STATE == 1) {  
                             gameState = FADE_IN_STATE;
                         } else if (FASE_STATE == 2) {
+                            gameState = FADE_IN_STATE;
+                        } else if (FASE_STATE == 3) {
                             gameState = VICTORY_STATE;
                         }
                     }
@@ -514,8 +560,15 @@
                 }
             }
             private void fadeInState() {
+                if (FASE_STATE == 2) {
+                    player.autoWalkDirection = "left";
+                    player.autoWalk = true;
+                    player.andar(false);
+                } else {
                 player.autoWalk = false;
                 player.isMoving = false;
+                }
+
                 long now = System.currentTimeMillis();
                 if (fadeStartTime < 0) fadeStartTime = now;
                 float progress = (float)(now - fadeStartTime) / FADE_DURATION;
@@ -523,9 +576,11 @@
                 if (progress >= 1f) {
                     fadeAlpha = 1f;
                     fadeStartTime = -1;
-                    gameState = TRANS_STATE; // mostra a tela de transição
+                    loadingStartTime = -1;
+                    levelLoaded = false;
+                    gameState = LOADING_STATE;
                 }
-            }
+            }           
             private void fadeOutState() {
                 long now = System.currentTimeMillis();
                 if (fadeStartTime < 0) fadeStartTime = now;
@@ -554,49 +609,44 @@
                         g2.drawImage(backgroundImage, 0, 0, screenWidth, screenHeight, this);
                     }
             }
+            private void drawObjects(Graphics2D g2) {
+                for (int i = 0; i < obj.length; i++) {
+                    if (obj[i] == null) continue;
+                    if (obj[i].ally && FASE_STATE == 2) continue; // não desenha a professora na fase 2
+                    obj[i].draw(g2, this);
+                }
+            }
             private void drawPlay(Graphics2D g2) {
-                // Desenha o mapa
-                    tileManager.Draw(g2);
-                    
-                    // Desenha os objetos do mundo (inimigos, itens, aliados)
-                    for(int i = 0; i < obj.length; i++){
-                        if(obj[i] != null){
-                            obj[i].draw(g2, this);
-                        }
-                    }
-                    
-                    // Desenha o jogador
-                    player.Draw(g2);
-                    HUD.Draw(g2);
+                tileManager.Draw(g2);
+                drawObjects(g2);
+                player.Draw(g2);
+                HUD.Draw(g2);
             }
             private void drawDialog(Graphics2D g2) {
                 tileManager.Draw(g2);
-                    for (int i = 0; i < obj.length; i++) {
-                        if (obj[i] != null) obj[i].draw(g2, this);
-                    }
-                    player.Draw(g2);
-                    HUD.Draw(g2);
+                drawObjects(g2);
+                player.Draw(g2);
+                HUD.Draw(g2);
 
-                    // Caixa de diálogo
-                    g2.setColor(new Color(0, 0, 0, 200));
-                    g2.fillRect(50, screenHeight - 150, screenWidth - 100, 100);
+                // Caixa de diálogo
+                g2.setColor(new Color(0, 0, 0, 200));
+                g2.fillRect(50, screenHeight - 150, screenWidth - 100, 100);
 
-                    // Texto de diálogo
-                    g2.setColor(Color.WHITE);
-                    g2.setFont(new Font("Arial", Font.PLAIN, 18));
-                    String dialogText = dialogue[currentDialogIndex];
-                    String[] lines = dialogText.split("\\n");
-                    int lineHeight = 22;
-                    int startY = screenHeight - 110;
-                    for (int i = 0; i < lines.length; i++) {
-                        g2.drawString(lines[i], 70, startY + i * lineHeight);
-                    }
+                // Texto de diálogo
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.PLAIN, 18));
+
+                String dialogText = dialogue[currentDialogIndex];
+                String[] lines = dialogText.split("\\n");
+                int lineHeight = 22;
+                int startY = screenHeight - 110;
+                for (int i = 0; i < lines.length; i++) {
+                    g2.drawString(lines[i], 70, startY + i * lineHeight);
+                }
             }
             private void drawFade(Graphics2D g2) {
                 tileManager.Draw(g2);
-                for (int i = 0; i < obj.length; i++) {
-                    if (obj[i] != null) obj[i].draw(g2, this);
-                }
+                drawObjects(g2);
                 player.Draw(g2);
                 HUD.Draw(g2);
                 int alpha = (int)(fadeAlpha * 255);
@@ -605,9 +655,7 @@
             }
             private void drawFadeIn(Graphics2D g2) {
                 tileManager.Draw(g2);
-                for (int i = 0; i < obj.length; i++) {
-                    if (obj[i] != null) obj[i].draw(g2, this);
-                }
+                drawObjects(g2);
                 player.Draw(g2);
                 HUD.Draw(g2);
                 int alpha = (int)(fadeAlpha * 255);
@@ -616,9 +664,7 @@
             }
             private void drawFadeOut(Graphics2D g2) {
                 tileManager.Draw(g2);
-                for (int i = 0; i < obj.length; i++) {
-                    if (obj[i] != null) obj[i].draw(g2, this);
-                }
+                drawObjects(g2);
                 player.Draw(g2);
                 HUD.Draw(g2);
                 int alpha = (int)(fadeAlpha * 255);
@@ -626,15 +672,37 @@
                 g2.fillRect(0, 0, screenWidth, screenHeight);
             }
             private void drawTrans(Graphics2D g2) {
-                // tela já preta do fade, só escreve por cima
                 g2.setColor(Color.BLACK);
                 g2.fillRect(0, 0, screenWidth, screenHeight);
                 g2.setColor(Color.YELLOW);
                 g2.setFont(new Font("Arial", Font.BOLD, 56));
+                switch (FASE_STATE) {
+                    case 1:
+                        
+                        break;
+                    case 2:
+                        
+                        break;
+                    case 3:
+                        
+                        break;
+                
+                
+                }
                 String ending = "Você encontrou a Professora!";
                 int ew = g2.getFontMetrics().stringWidth(ending);
                 g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
                 nextFaseButton.setVisible(true);
+            }
+            private void drawLoading(Graphics2D g2) {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, screenWidth, screenHeight);
+                        
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.PLAIN, 28));
+                String loadingText = "Carregando...";
+                int lw = g2.getFontMetrics().stringWidth(loadingText);
+                g2.drawString(loadingText, screenWidth/2 - lw/2, screenHeight/2);
             }
             private void drawGameOver(Graphics2D g2) {
                 // Fundo escuro
@@ -678,6 +746,7 @@
                     case DIALOG_STATE:    dialogState();   break;
                     case FADE_IN_STATE:   fadeInState();   break;
                     case FADE_OUT_STATE:  fadeOutState();  break;
+                    case LOADING_STATE:   loadingState();  break;
                     case FADE_STATE:      fadeState();     break; 
                 }
             }
@@ -697,6 +766,7 @@
                     case FADE_STATE:      drawFade(g2);         break;
                     case FADE_IN_STATE:   drawFadeIn(g2);       break;
                     case FADE_OUT_STATE:  drawFadeOut(g2);      break;
+                    case LOADING_STATE:   drawLoading(g2);      break;
                     case TRANS_STATE:     drawTrans(g2);        break;
                     case GAME_OVER_STATE: drawGameOver(g2);     break;
                     case VICTORY_STATE:   drawVictory(g2);      break;
@@ -711,7 +781,6 @@
                 while (running) {
                     // Atualiza a lógica do jogo
                     update();
-                    
                     // Redesenha a tela
                     repaint();
 

@@ -5,12 +5,16 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+
 
 /**
  * Classe principal que inicia o jogo.
  * Cria a janela e o painel de jogo.
  */
 public class App {
+    static int fase;
     public static void main(String[] args) throws Exception {
         // Cria a janela principal
         JFrame window = new JFrame("Stella");

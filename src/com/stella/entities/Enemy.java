@@ -52,7 +52,7 @@ public class Enemy extends superObject {
         if (enemyType.equals("persuer") && dist < 220) {
         // Normaliza para mover sempre na mesma velocidade
         // independente da direção
-        double speed = 0.8;
+        double speed = 0.6;
         WorldX += (dx / dist) * speed;
         WorldY += (dy / dist) * speed;
         } else if (enemyType.equals("randomWalker")) {

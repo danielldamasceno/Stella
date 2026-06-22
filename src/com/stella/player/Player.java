@@ -36,6 +36,7 @@ public class Player extends Entity {
     int animationCounter = 0;
     public boolean isMoving = false;
     public boolean autoWalk = false;
+    public String autoWalkDirection = "right";
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     private String situation;
@@ -75,7 +76,11 @@ public class Player extends Entity {
                 break;
             case 2: 
                 worldX = 10 * gp.tileSz;
-                worldY = 10 * gp.tileSz;
+                worldY = 21 * gp.tileSz;
+                break;
+            case 3:
+                worldX = 43 * gp.tileSz;
+                worldY = 15 * gp.tileSz;
                 break;
         }
         direction = "bottom";
@@ -102,7 +107,7 @@ public class Player extends Entity {
         }*/
 
         if (Fear.situation == 1.0) { 
-            // debug gp.gameState = GamePanel.FADE_STATE;
+            //gp.gameState = GamePanel.FADE_STATE; //debug 
         }
     }
 
@@ -110,14 +115,24 @@ public class Player extends Entity {
      * Move o jogador baseado nas teclas pressionadas.
      * Só se move se não colidiu com nada.
      */
-    public void andar(){
+    public void andar(boolean blockMovement){
 
+        if(blockMovement == true) {
+            autoWalk = false;
+            return;
+        }
+          
         if (autoWalk) {
-            worldX += 1.4; 
-            direction = "right";
+            switch (autoWalkDirection) {
+                case "left":  worldX -= 1.4; break;
+                case "right": worldX += 1.4; break;
+                case "top":   worldY -= 1.4; break;
+                case "bottom":worldY += 1.4; break;
+            }
+            direction = autoWalkDirection;
             isMoving = true;
             return; // ignora input do teclado
-        }
+        }   
 
         // Verifica se alguma tecla de movimento está pressionada
         isMoving = key.leftPressed || key.rightPressed || key.upPressed || key.downPressed;
