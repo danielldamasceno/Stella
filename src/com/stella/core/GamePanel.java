@@ -2,6 +2,7 @@
     import java.awt.Color;
     import java.awt.Dimension;
     import java.awt.Font;
+    import java.awt.FontMetrics;
     import java.awt.Graphics;
     import java.awt.Graphics2D;
     import java.awt.Rectangle;
@@ -13,6 +14,7 @@
     import javax.imageio.ImageIO;
     import javax.swing.JButton;
     import javax.swing.JPanel;   
+    import java.util.ArrayList;
     import com.stella.player.Fear;
     import com.stella.player.Player;
     import com.stella.player.KeyHandler;
@@ -51,6 +53,9 @@
         public static final int DIALOG_STATE = 5;
         public static final int TRANS_STATE = 6;
         public static final int FADE_STATE = 4;
+        public static final int CUTSCENE_1_STATE = 10;
+        public static final int CUTSCENE_2_STATE = 11;
+        public static final int HIDE_SEQUENCE_STATE = 12;
         public static final int FADE_IN_STATE = 7;
         public static final int FADE_OUT_STATE = 8;
         public static final int LOADING_STATE = 9;
@@ -64,8 +69,26 @@
         public int FASE_STATE = 2;
         private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
         private long fadeStartTime = -1;   // quando o fade começou
-        private String[] dialogue = new String[6];
+        private String[] dialogue = new String[20];
+        private int dialogueLength = 0;
         private int currentDialogIndex = 0;
+        private int nextGameStateAfterDialog = PLAY_STATE;
+        private String interactionPrompt = "";
+        private BufferedImage cutsceneBackground;
+        private BufferedImage cutsceneIntroBackground;
+        private BufferedImage cutscenePsychologistBackground;
+        private BufferedImage cutsceneCharacterBackground;
+        private String[] cutsceneLines = new String[0];
+        private String[] cutsceneSpeakers = new String[0];
+        private int cutsceneIndex = 0;
+        private boolean phase1IntroActive = false;
+        private boolean pendingHideSequence = false;
+        private boolean hideSequenceActive = false;
+        private boolean playerHidden = false;
+        private boolean fromSafezonePsychDialog = false;
+        private long hideSequenceStartedAt = -1;
+        private static final int HIDE_SEQUENCE_DURATION_MS = 5000;
+        private int hideCountdownSeconds = 5;
         private long loadingStartTime = -1;
         private static final int LOADING_MIN_DURATION = 750; // ms, dentro do range 0.5-1s que você pediu
         private boolean levelLoaded = false;
@@ -120,6 +143,10 @@
             try {
                 backgroundImage = ImageIO.read(getClass().getResourceAsStream("/res/menu.png"));
                 buttonTexture = ImageIO.read(getClass().getResourceAsStream("/res/tile/wall2.png"));
+                cutsceneIntroBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/cutscene/quartoinit.png"));
+                cutscenePsychologistBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/psicologa/psifala.png"));
+                cutsceneCharacterBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/psicologa/mcfala.png"));
+                cutsceneBackground = cutsceneIntroBackground;
             } catch (IOException e) {
                 System.out.println("Erro ao carregar background ou textura de botões: " + e.getMessage());
             }
@@ -128,7 +155,7 @@
             startButton = createTexturedButton("Começar o jogo", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    startGameWithDialogue();
+                    startGame();
                 }
             });
             optionsButton = createTexturedButton("Opções", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
@@ -277,25 +304,82 @@
              * Inicializa todos os objetos do jogo.
              */
             public void setupGame() {
-                if(FASE_STATE == 1) {
-                        tileManager.map = "corredor.txt";
-                    } else if (FASE_STATE == 2) {
-                        tileManager.map = "mapSchool.txt";
-                    } else if (FASE_STATE == 3) {
-                        tileManager.map = "map2.txt";
-                    }
-
+                tileManager.map = aSetter.getTileMapFile(FASE_STATE);
                 tileManager.LoadMap();
                 player.setStartPosition(FASE_STATE);
                 aSetter.setObject(FASE_STATE);
             }
             public void setDialog() {
-                dialogue[0] = "Ola Stella!";
-                dialogue[1] = "Por que voce esta aqui?";
-                dialogue[2] = "Parece tão assustada. \nO que aconteceu?";
-                dialogue[3] = "...";
-                dialogue[4] = "Venha, vou te levar para um lugar calmo.";
-                dialogue[5] = "Para conversarmos, Ok?";
+                setDialog(new String[] {
+                    "Ola Stella!",
+                    "Por que voce esta aqui?",
+                    "Parece tão assustada. \nO que aconteceu?",
+                    "...",
+                    "Venha, vou te levar para um lugar calmo.",
+                    "Para conversarmos, Ok?"
+                });
+            }
+
+            public void setDialog(String... lines) {
+                for (int i = 0; i < dialogue.length; i++) {
+                    dialogue[i] = "";
+                }
+
+                dialogueLength = Math.min(lines.length, dialogue.length);
+                for (int i = 0; i < dialogueLength; i++) {
+                    dialogue[i] = lines[i];
+                }
+                currentDialogIndex = 0;
+            }
+
+            private void startDialogue(int nextState, String... lines) {
+                setDialog(lines);
+                nextGameStateAfterDialog = nextState;
+                currentDialogIndex = 0;
+                player.autoWalk = false;
+                player.autoWalkDirection = "right";
+                player.isMoving = false;
+                gameState = DIALOG_STATE;
+                key.interactPressed = false;
+            }
+
+            private void startHideSequence() {
+                hideSequenceActive = true;
+                playerHidden = false;
+                hideSequenceStartedAt = System.currentTimeMillis();
+                hideCountdownSeconds = 5;
+                gameState = HIDE_SEQUENCE_STATE;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                player.autoWalk = false;
+                player.isMoving = false;
+            }
+
+            private boolean isTableTile(int tileCode) {
+                return tileCode == 10 || tileCode == 11;
+            }
+
+            private boolean canHideBehindTable() {
+                int centerCol = (int) ((player.worldX + tileSz / 2.0) / tileSz);
+                int centerRow = (int) ((player.worldY + tileSz / 2.0) / tileSz);
+
+                int[][] checks = {
+                    {centerCol, centerRow - 1},
+                    {centerCol + 1, centerRow},
+                    {centerCol, centerRow + 1},
+                    {centerCol - 1, centerRow}
+                };
+
+                for (int[] check : checks) {
+                    if (check[0] < 0 || check[0] >= maxWorldCol || check[1] < 0 || check[1] >= maxWorldRow) {
+                        continue;
+                    }
+                    int tileCode = tileManager.mapTileNum[check[0]][check[1]];
+                    if (isTableTile(tileCode)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             /**
@@ -308,31 +392,104 @@
                 this.remove(optionsButton);
                 this.revalidate();
                 this.repaint();
-                
-                // Muda para o estado de jogo
-                gameState = PLAY_STATE;
+
+                startCutscene1();
                 this.requestFocusInWindow(); // Garante foco no painel após iniciar
-                
+
                 // Inicia a thread se não estiver rodando
                 if (GameThread == null || !GameThread.isAlive()) {
                     startGameThread();
                 }
-            }   
+            }
+
+            private void startCutscene1() {
+                cutsceneLines = new String[] {
+                    "a primeira vez que vi algo assim, foi no meu quarto",
+                    "*xingamentos*",
+                    "meus pais estavam brigando bem feio, eu era criança e não entendia direito... até que ...",
+                    "*som de tapa*"
+                };
+                cutsceneSpeakers = new String[0];
+                cutsceneBackground = cutsceneIntroBackground;
+                cutsceneIndex = 0;
+                gameState = CUTSCENE_1_STATE;
+                currentDialogIndex = 0;
+                setDialog(cutsceneLines);
+                nextGameStateAfterDialog = CUTSCENE_2_STATE;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                player.autoWalk = false;
+                player.isMoving = false;
+                player.direction = "bottom";
+                player.worldX = screenWidth / 2 - tileSz / 2;
+                player.worldY = screenHeight / 2 - tileSz / 2;
+                player.screenX = screenWidth / 2 - tileSz / 2;
+                player.screenY = screenHeight / 2 - tileSz / 2;
+                cameraX = 0;
+                cameraY = 0;
+            }
+
+            private void startCutscene2() {
+                cutsceneLines = new String[] {
+                    "Psicóloga: \"Entendo. Pelo que você contou, isso pode indicar uma situação de violência física dentro de casa.\"",
+                    "Personagem: \"Eu ficava no meu quarto esperando a briga acabar.\"",
+                    "Psicóloga: \"Ninguém deveria passar por isso. Você não tem culpa pelo que aconteceu.\"",
+                    "Psicóloga: \"Em situações assim, o mais seguro é procurar um adulto de confiança, como um familiar, professor, orientador ou outro responsável que possa ajudar.\"",
+                    "Psicóloga: \"Também existem serviços de proteção para crianças e famílias quando há violência.\"",
+                    "Psicóloga: \"Agora, se você se sentir confortável, pode continuar contando a história. O que aconteceu depois?\""
+                };
+                cutsceneSpeakers = new String[] {
+                    "psicologa",
+                    "personagem",
+                    "psicologa",
+                    "psicologa",
+                    "psicologa",
+                    "psicologa"
+                };
+                cutsceneBackground = cutsceneIntroBackground;
+                cutsceneIndex = 0;
+                phase1IntroActive = false;
+                FASE_STATE = 1;
+                setupGame();
+                gameState = CUTSCENE_2_STATE;
+                currentDialogIndex = 0;
+                setDialog(cutsceneLines);
+                nextGameStateAfterDialog = PLAY_STATE;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                player.autoWalk = false;
+                player.isMoving = false;
+                player.direction = "bottom";
+                player.worldX = screenWidth / 2 - tileSz / 2;
+                player.worldY = screenHeight / 2 - tileSz / 2;
+                player.screenX = screenWidth / 2 - tileSz / 2;
+                player.screenY = screenHeight / 2 - tileSz / 2;
+                cameraX = 0;
+                cameraY = 0;
+            }
+
+            private void startPsychologistConversation() {
+                cutsceneLines = new String[] {
+                    "Psicóloga: \"O que você viveu é uma situação de **violência contra a criança**. Pessoas que observam ou tentam se aproximar de crianças de forma suspeita representam um risco e nunca devem ser ignoradas.\"",
+                    "Psicóloga: \"Nesses momentos, o mais importante é não se aproximar, procurar um adulto de confiança e contar imediatamente o que aconteceu. Mesmo que você não tenha certeza, é sempre melhor pedir ajuda.\"",
+                    "Psicóloga: \"Você fez a escolha certa ao não entrar naquela sala.\"",
+                    "Psicóloga: \"Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?\""
+                };
+                cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa"};
+                cutsceneBackground = cutscenePsychologistBackground;
+                cutsceneIndex = 0;
+                currentDialogIndex = 0;
+                setDialog(cutsceneLines);
+                fromSafezonePsychDialog = true;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                player.autoWalk = false;
+                player.isMoving = false;
+                gameState = CUTSCENE_2_STATE;
+            }
             
             public void startGameWithDialogue() {
-
-                this.remove(startButton);
-                this.remove(optionsButton);
-                this.revalidate();
-                this.repaint();
-
-                gameState = DIALOG_STATE;
-                currentDialogIndex = 0;
-
-                if (GameThread == null || !GameThread.isAlive()) {
-                    startGameThread();
-                }
-                this.requestFocusInWindow();
+                startGame();
             }
 
             public void nextLevel() {
@@ -441,29 +598,41 @@
                 this.cameraY = cameraY;
             }
             public void teleportPlayer() {
-                if (FASE_STATE != 1) return;
-                int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
-                int tilePortalEntrada = 2; // ← tile onde ela reaparece (ajuste aqui)
-
-                int fim = tilePortalSaida * tileSz;
-                int inicio = tilePortalEntrada * tileSz;
-
-                if (player.worldX >= fim) {
-                    int offset = player.worldX - fim; // quanto passou do portal
-                    player.worldX = inicio + offset;  // mantém o excesso para não travar
-                        
-                    for (superObject o : obj) {
-                        if (o != null && o.ally) {
-                            o.WorldX = o.WorldX - fim + inicio;
-                        }
-                    }
-                }
+                // Mantido sem efeito para evitar qualquer reposicionamento inesperado do jogador.
             }
             
             private void playState() {
                 // Atualiza o estado do jogador (colisão, medo)
                 player.update();
                 player.autoWalk = false; // Reseta o autoWalk
+
+                if (shouldTriggerGameOver()) {
+                    fadeStartTime = -1;
+                    gameState = FADE_STATE;
+                    return;
+                }
+
+                updateInteractionPrompts();
+
+                if (key.interactPressed) {
+                    key.interactPressed = false;
+                    for (int i = 0; i < obj.length; i++) {
+                        if (obj[i] == null) continue;
+                        if (obj[i] instanceof com.stella.entities.InteractionBlock block) {
+                            if (block.isNear(player) && !block.used) {
+                                block.used = true;
+                                // Se for a safezone (agora com prompt "Acessar sala"), abre diálogo com a psicóloga
+                                if ("Acessar sala".equalsIgnoreCase(block.promptText)) {
+                                    startPsychologistConversation();
+                                } else {
+                                    pendingHideSequence = true;
+                                    startDialogue(PLAY_STATE, block.getDialogueLines());
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 if (FASE_STATE == 1) {
                     /*int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
@@ -505,26 +674,41 @@
                         }
                     }
                 }
+
+                for (int i = 0; i < obj.length; i++) {
+                    if (obj[i] == null) continue;
+                    if (obj[i] instanceof com.stella.entities.StepDialogueObject step) {
+                        if (step.isPlayerOnTop(player) && !step.triggered) {
+                            step.triggered = true;
+                            startDialogue(PLAY_STATE, step.dialogueLines);
+                            break;
+                        }
+                    }
+                }
                 
                 player.andar(false);
                 updateCam(); 
                 
             }
+            private boolean shouldTriggerGameOver() {
+                return Fear.situation >= 1.0 && gameState != FADE_STATE && gameState != GAME_OVER_STATE && gameState != VICTORY_STATE;
+            }
+
             private void dialogState() {
 
                 player.update();
+                if (shouldTriggerGameOver()) {
+                    fadeStartTime = -1;
+                    gameState = FADE_STATE;
+                    return;
+                }
                 player.andar(true);
                 updateCam();
-                teleportPlayer();
 
                 if (FASE_STATE == 1) {
-                    player.autoWalk = true;
-                    player.andar(false);
-                    for (superObject o : obj) {
-                        if (o != null && o.ally) {
-                            o.WorldX += 2;
-                        }
-                    }
+                    player.autoWalk = false;
+                    player.isMoving = false;
+                    player.andar(true);
                 } else if (FASE_STATE == 2) {
                     player.autoWalkDirection = "left";
                     player.autoWalk = true;
@@ -536,18 +720,119 @@
                 if (key.enterPressed) {
                     key.enterPressed = false;
                     currentDialogIndex++;
-                    if (currentDialogIndex >= dialogue.length) {
+                    if (currentDialogIndex >= dialogueLength) {
                         currentDialogIndex = 0;
-                        if (FASE_STATE == 1) {  
-                            gameState = FADE_IN_STATE;
+                        if (pendingHideSequence) {
+                            pendingHideSequence = false;
+                            startHideSequence();
+                            return;
+                        }
+                        if (gameState == CUTSCENE_1_STATE) {
+                            gameState = CUTSCENE_2_STATE;
+                        } else if (FASE_STATE == 1) {
+                            gameState = PLAY_STATE;
                         } else if (FASE_STATE == 2) {
-                            gameState = FADE_IN_STATE;
+                            gameState = nextGameStateAfterDialog;
                         } else if (FASE_STATE == 3) {
                             gameState = VICTORY_STATE;
+                        } else {
+                            gameState = nextGameStateAfterDialog;
                         }
                     }
                 }
             }
+
+            private void cutscene1State() {
+                player.update();
+                player.andar(true);
+                player.isMoving = false;
+                if (key.enterPressed) {
+                    key.enterPressed = false;
+                    currentDialogIndex++;
+                    if (currentDialogIndex >= dialogueLength) {
+                        currentDialogIndex = 0;
+                        startCutscene2();
+                    }
+                }
+            }
+
+            private void cutscene2State() {
+                player.update();
+                player.andar(true);
+                player.isMoving = false;
+                if (key.enterPressed) {
+                    key.enterPressed = false;
+                    currentDialogIndex++;
+                    if (currentDialogIndex >= dialogueLength) {
+                        currentDialogIndex = 0;
+                        if (fromSafezonePsychDialog) {
+                            fromSafezonePsychDialog = false;
+                            gameState = PLAY_STATE;
+                        } else if (phase1IntroActive) {
+                            phase1IntroActive = false;
+                            gameState = PLAY_STATE;
+                        } else {
+                            FASE_STATE = 1;
+                            setupGame();
+                            startPhase1Intro();
+                        }
+                    }
+                }
+            }
+
+            private void startPhase1Intro() {
+                cutsceneLines = new String[] {
+                    "O primeiro caso foi em uma pizzaria que fui para um aniversário, eu precisava achar a sala do aniversariante, então resolvi explorar"
+                };
+                cutsceneSpeakers = new String[] { "personagem" };
+                cutsceneBackground = cutsceneCharacterBackground;
+                phase1IntroActive = true;
+                currentDialogIndex = 0;
+                setDialog(cutsceneLines);
+                nextGameStateAfterDialog = PLAY_STATE;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                gameState = CUTSCENE_2_STATE;
+            }
+            private void hideSequenceState() {
+                player.update();
+                player.autoWalk = false;
+                player.isMoving = false;
+                player.andar(false);
+                updateCam();
+
+                if (!hideSequenceActive) {
+                    gameState = PLAY_STATE;
+                    return;
+                }
+
+                long elapsed = System.currentTimeMillis() - hideSequenceStartedAt;
+                hideCountdownSeconds = Math.max(0, (int) Math.ceil((HIDE_SEQUENCE_DURATION_MS - elapsed) / 1000.0));
+
+                double remainingRatio = Math.max(0.0, 1.0 - (elapsed / (double) HIDE_SEQUENCE_DURATION_MS));
+                double fearIncreasePerFrame = 0.0015 + (0.0035 * (1.0 - remainingRatio));
+                Fear.situation = Math.min(1.0, Fear.situation + fearIncreasePerFrame);
+
+                if (elapsed >= HIDE_SEQUENCE_DURATION_MS) {
+                    hideSequenceActive = false;
+                    gameState = FADE_STATE;
+                    return;
+                }
+
+                if (key.interactPressed || key.enterPressed) {
+                    key.interactPressed = false;
+                    key.enterPressed = false;
+                    if (canHideBehindTable()) {
+                        playerHidden = true;
+                        hideSequenceActive = false;
+                        Fear.situation = 0;
+                        gameState = PLAY_STATE;
+                        player.autoWalk = false;
+                        player.isMoving = false;
+                    }
+                }
+            }
+
             private void fadeState() {
                 long now = System.currentTimeMillis();
                 if (fadeStartTime < 0) fadeStartTime = now;
@@ -621,7 +906,30 @@
                 drawObjects(g2);
                 player.Draw(g2);
                 HUD.Draw(g2);
+
+                if (!interactionPrompt.isEmpty()) {
+                    g2.setColor(new Color(255, 255, 255, 220));
+                    g2.fillRoundRect(screenWidth / 2 - 180, screenHeight - 120, 360, 40, 20, 20);
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.BOLD, 18));
+                    int promptWidth = g2.getFontMetrics().stringWidth(interactionPrompt);
+                    g2.drawString(interactionPrompt, screenWidth / 2 - promptWidth / 2, screenHeight - 94);
+                }
             }
+            private void updateInteractionPrompts() {
+                interactionPrompt = "";
+
+                for (int i = 0; i < obj.length; i++) {
+                    if (obj[i] == null) continue;
+                    if (obj[i] instanceof com.stella.entities.InteractionBlock block) {
+                        if (block.isNear(player)) {
+                            interactionPrompt = block.promptText;
+                            break;
+                        }
+                    }
+                }
+            }
+
             private void drawDialog(Graphics2D g2) {
                 tileManager.Draw(g2);
                 drawObjects(g2);
@@ -629,21 +937,99 @@
                 HUD.Draw(g2);
 
                 // Caixa de diálogo
-                g2.setColor(new Color(0, 0, 0, 200));
-                g2.fillRect(50, screenHeight - 150, screenWidth - 100, 100);
+                g2.setColor(new Color(0, 0, 0, 220));
+                g2.fillRoundRect(50, screenHeight - 160, screenWidth - 100, 120, 20, 20);
+
+                // Nome do falante
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                g2.drawString("Personagem principal:", 70, screenHeight - 128);
 
                 // Texto de diálogo
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("Arial", Font.PLAIN, 18));
 
                 String dialogText = dialogue[currentDialogIndex];
-                String[] lines = dialogText.split("\\n");
+                int maxTextWidth = screenWidth - 140; // dialog box width minus paddings
+                String[] lines = wrapText(dialogText, g2, maxTextWidth);
                 int lineHeight = 22;
-                int startY = screenHeight - 110;
+                int startY = screenHeight - 100;
                 for (int i = 0; i < lines.length; i++) {
                     g2.drawString(lines[i], 70, startY + i * lineHeight);
                 }
             }
+            private void drawHideSequence(Graphics2D g2) {
+                tileManager.Draw(g2);
+                drawObjects(g2);
+                if (!playerHidden) {
+                    player.Draw(g2);
+                }
+                HUD.Draw(g2);
+
+                g2.setColor(new Color(0, 0, 0, 220));
+                g2.fillRoundRect(60, 60, screenWidth - 120, 170, 20, 20);
+
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 28));
+                g2.drawString("Eles te viram...", 90, 105);
+
+                g2.setFont(new Font("Arial", Font.PLAIN, 22));
+                g2.drawString("Tempo restante: " + hideCountdownSeconds + "s", 90, 145);
+
+                if (canHideBehindTable()) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("Aperte E para se esconder atrás da mesa", 90, 180);
+                } else {
+                    g2.setColor(Color.WHITE);
+                    g2.drawString("Encontre uma mesa para se esconder", 90, 180);
+                }
+            }
+
+            private void drawCutscene(Graphics2D g2) {
+                BufferedImage sceneImage = cutsceneBackground;
+                if (currentDialogIndex < cutsceneSpeakers.length) {
+                    String speaker = cutsceneSpeakers[currentDialogIndex];
+                    if ("personagem".equalsIgnoreCase(speaker)) {
+                        sceneImage = cutsceneCharacterBackground;
+                    } else if ("psicologa".equalsIgnoreCase(speaker)) {
+                        sceneImage = cutscenePsychologistBackground;
+                    }
+                }
+
+                if (sceneImage != null) {
+                    g2.drawImage(sceneImage, 0, 0, screenWidth, screenHeight, this);
+                } else {
+                    g2.setColor(Color.BLACK);
+                    g2.fillRect(0, 0, screenWidth, screenHeight);
+                }
+
+                g2.setColor(new Color(0, 0, 0, 220));
+                g2.fillRoundRect(50, screenHeight - 160, screenWidth - 100, 120, 20, 20);
+
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                String speakerLabel = "Personagem principal";
+                if (currentDialogIndex < cutsceneSpeakers.length) {
+                    String speaker = cutsceneSpeakers[currentDialogIndex];
+                    if ("psicologa".equalsIgnoreCase(speaker)) {
+                        speakerLabel = "Psicóloga";
+                    } else if ("personagem".equalsIgnoreCase(speaker)) {
+                        speakerLabel = "Personagem";
+                    }
+                }
+                g2.drawString(speakerLabel + ":", 70, screenHeight - 128);
+
+                g2.setFont(new Font("Arial", Font.PLAIN, 18));
+                String dialogText = dialogue[currentDialogIndex];
+                int maxTextWidth = screenWidth - 140; // dialog box width minus paddings
+                String[] lines = wrapText(dialogText, g2, maxTextWidth);
+                int lineHeight = 22;
+                int startY = screenHeight - 100;
+                for (int i = 0; i < lines.length; i++) {
+                    g2.drawString(lines[i], 70, startY + i * lineHeight);
+                }
+            }
+
             private void drawFade(Graphics2D g2) {
                 tileManager.Draw(g2);
                 drawObjects(g2);
@@ -670,6 +1056,52 @@
                 int alpha = (int)(fadeAlpha * 255);
                 g2.setColor(new Color(0, 0, 0, alpha));
                 g2.fillRect(0, 0, screenWidth, screenHeight);
+            }
+            
+            private String[] wrapText(String text, Graphics2D g2, int maxWidth) {
+                java.util.List<String> lines = new ArrayList<>();
+                if (text == null) return new String[0];
+                String[] paragraphs = text.split("\\n");
+                FontMetrics fm = g2.getFontMetrics();
+                for (String para : paragraphs) {
+                    if (para.isEmpty()) {
+                        lines.add("");
+                        continue;
+                    }
+                    String[] words = para.split(" ");
+                    StringBuilder line = new StringBuilder();
+                    for (String word : words) {
+                        String test = line.length() == 0 ? word : line + " " + word;
+                        if (fm.stringWidth(test) <= maxWidth) {
+                            if (line.length() == 0) line.append(word);
+                            else { line.append(" ").append(word); }
+                        } else {
+                            if (line.length() > 0) {
+                                lines.add(line.toString());
+                                line.setLength(0);
+                            }
+                            // word longer than maxWidth: break it
+                            if (fm.stringWidth(word) <= maxWidth) {
+                                line.append(word);
+                            } else {
+                                StringBuilder part = new StringBuilder();
+                                for (char c : word.toCharArray()) {
+                                    part.append(c);
+                                    if (fm.stringWidth(part.toString()) > maxWidth) {
+                                        // remove last char and add
+                                        part.setLength(part.length() - 1);
+                                        lines.add(part.toString());
+                                        part.setLength(0);
+                                        part.append(c);
+                                    }
+                                }
+                                if (part.length() > 0) line.append(part.toString());
+                            }
+                        }
+                    }
+                    if (line.length() > 0) lines.add(line.toString());
+                }
+                return lines.toArray(new String[0]);
             }
             private void drawTrans(Graphics2D g2) {
                 g2.setColor(Color.BLACK);
@@ -744,6 +1176,9 @@
                 switch (gameState) {
                     case PLAY_STATE:      playState();     break;
                     case DIALOG_STATE:    dialogState();   break;
+                    case HIDE_SEQUENCE_STATE: hideSequenceState(); break;
+                    case CUTSCENE_1_STATE: cutscene1State(); break;
+                    case CUTSCENE_2_STATE: cutscene2State(); break;
                     case FADE_IN_STATE:   fadeInState();   break;
                     case FADE_OUT_STATE:  fadeOutState();  break;
                     case LOADING_STATE:   loadingState();  break;
@@ -763,6 +1198,9 @@
                     case TITLE_STATE:     drawTitle(g2);        break;
                     case PLAY_STATE:      drawPlay(g2);         break;
                     case DIALOG_STATE:    drawDialog(g2);       break;
+                    case HIDE_SEQUENCE_STATE: drawHideSequence(g2); break;
+                    case CUTSCENE_1_STATE: drawCutscene(g2);     break;
+                    case CUTSCENE_2_STATE: drawCutscene(g2);     break;
                     case FADE_STATE:      drawFade(g2);         break;
                     case FADE_IN_STATE:   drawFadeIn(g2);       break;
                     case FADE_OUT_STATE:  drawFadeOut(g2);      break;

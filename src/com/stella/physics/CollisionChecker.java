@@ -18,65 +18,53 @@ public class CollisionChecker {
      * Verifica se uma entidade colidiu com alguma parede/tile.
      * Baseado na direção que a entidade está tentando se mover.
      */
-    public void checkTile(Entity entity){
-        // Reseta a colisão a cada frame (começa sem colidir)
+    public void checkTile(Entity entity) {
+        checkTile(entity, entity.direction);
+    }
+
+    public void checkTile(Entity entity, String direction) {
         entity.collisonOn = false;
 
-        // Calcula as coordenadas da área de colisão da entidade
+        int tileSize = gp.tileSz;
         int entityLeftWorldX = entity.worldX + entity.solidArea.x;
         int entityRightWorldX = entity.worldX + entity.solidArea.x + entity.solidArea.width;
         int entityTopWorldY = entity.worldY + entity.solidArea.y;
         int entityBottomWorldY = entity.worldY + entity.solidArea.y + entity.solidArea.height;
 
-        // Converte as coordenadas para índices de tiles no mapa
-        int entityLeftCol = entityLeftWorldX / gp.tileSz;
-        int entityRightCol = entityRightWorldX / gp.tileSz;
-        int entityTopRow = entityTopWorldY / gp.tileSz;
-        int entityBottomRow = entityBottomWorldY / gp.tileSz;
+        int entityLeftCol = entityLeftWorldX / tileSize;
+        int entityRightCol = entityRightWorldX / tileSize;
+        int entityTopRow = entityTopWorldY / tileSize;
+        int entityBottomRow = entityBottomWorldY / tileSize;
 
-        int tileNum1, tileNum2;
+        int rowCheck;
+        int colCheck;
 
-        // Checa colisão baseado na direção que a entidade está virada
-        switch (entity.direction) {
+        switch (direction) {
             case "top":
-                // Verifica tiles acima da entidade
-                entityTopRow = (entityTopWorldY - 3) / gp.tileSz;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityTopRow];
-                if(gp.tileManager.tile[tileNum1].collision || gp.tileManager.tile[tileNum2].collision){
-                    entity.collisonOn = true;
-                }
+                rowCheck = Math.max(0, (entityTopWorldY - 3) / tileSize);
+                entity.collisonOn = isTileCollidable(entityLeftCol, rowCheck) || isTileCollidable(entityRightCol, rowCheck);
                 break;
-                
             case "right":
-                // Verifica tiles à direita da entidade
-                entityRightCol = (entityRightWorldX + 3) / gp.tileSz;
-                tileNum1 = gp.tileManager.mapTileNum[entityRightCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityBottomRow];
-                if(gp.tileManager.tile[tileNum1].collision || gp.tileManager.tile[tileNum2].collision){
-                    entity.collisonOn = true;
-                }
+                colCheck = Math.min(gp.maxWorldCol - 1, (entityRightWorldX + 3) / tileSize);
+                entity.collisonOn = isTileCollidable(colCheck, entityTopRow) || isTileCollidable(colCheck, entityBottomRow);
                 break;
-                
             case "bottom":
-                // Verifica tiles abaixo da entidade
-                entityBottomRow = (entityBottomWorldY + 3) / gp.tileSz;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityBottomRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityBottomRow];
-                if(gp.tileManager.tile[tileNum1].collision || gp.tileManager.tile[tileNum2].collision){
-                    entity.collisonOn = true;
-                }
+                rowCheck = Math.min(gp.maxWorldRow - 1, (entityBottomWorldY + 3) / tileSize);
+                entity.collisonOn = isTileCollidable(entityLeftCol, rowCheck) || isTileCollidable(entityRightCol, rowCheck);
                 break;
-                
             case "left":
-                // Verifica tiles à esquerda da entidade
-                entityLeftCol = (entityLeftWorldX - 3) / gp.tileSz;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityLeftCol][entityBottomRow];
-                if(gp.tileManager.tile[tileNum1].collision || gp.tileManager.tile[tileNum2].collision){
-                    entity.collisonOn = true;
-                }
+                colCheck = Math.max(0, (entityLeftWorldX - 3) / tileSize);
+                entity.collisonOn = isTileCollidable(colCheck, entityTopRow) || isTileCollidable(colCheck, entityBottomRow);
                 break;
         }
+    }
+
+    private boolean isTileCollidable(int col, int row) {
+        if (col < 0 || row < 0 || col >= gp.maxWorldCol || row >= gp.maxWorldRow) {
+            return true;
+        }
+
+        int tileNum = gp.tileManager.mapTileNum[col][row];
+        return tileNum >= 0 && tileNum < gp.tileManager.tile.length && gp.tileManager.tile[tileNum].collision;
     }
 }

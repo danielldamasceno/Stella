@@ -89,9 +89,11 @@ public class Player extends Entity {
     /**
      * Atualiza o estado do jogador a cada frame.
      */
+    public GamePanel getGamePanel() {
+        return gp;
+    }
+
     public void update(){
-        // Checa se bate em alguma parede
-        gp.cChecker.checkTile(this);
         // Checa proximidade com inimigos
         checkFear();
         // Checa proximidade com aliados (safezone)
@@ -121,50 +123,53 @@ public class Player extends Entity {
             autoWalk = false;
             return;
         }
-          
+
         if (autoWalk) {
-            switch (autoWalkDirection) {
+            String intendedDirection = autoWalkDirection;
+            switch (intendedDirection) {
                 case "left":  worldX -= 1.4; break;
                 case "right": worldX += 1.4; break;
                 case "top":   worldY -= 1.4; break;
                 case "bottom":worldY += 1.4; break;
             }
-            direction = autoWalkDirection;
+            direction = intendedDirection;
             isMoving = true;
             return; // ignora input do teclado
-        }   
+        }
 
-        // Verifica se alguma tecla de movimento está pressionada
-        isMoving = key.leftPressed || key.rightPressed || key.upPressed || key.downPressed;
+        int moveX = 0;
+        int moveY = 0;
 
-        // Se não colidiu, pode se mover
-        if(collisonOn == false){
-            if(key.leftPressed){
-                worldX -= 3;
-            }
-            if(key.rightPressed){
-                worldX += 3;
-            }
-            if(key.upPressed){
-                worldY -= 3;
-            }
-            if(key.downPressed){
-                worldY += 3;
+        if (key.leftPressed) moveX -= 3;
+        if (key.rightPressed) moveX += 3;
+        if (key.upPressed) moveY -= 3;
+        if (key.downPressed) moveY += 3;
+
+        isMoving = moveX != 0 || moveY != 0;
+        if (!isMoving) {
+            return;
+        }
+
+        if (moveX != 0) {
+            String horizontalDirection = moveX < 0 ? "left" : "right";
+            direction = horizontalDirection;
+            int oldX = worldX;
+            worldX += moveX;
+            gp.cChecker.checkTile(this, horizontalDirection);
+            if (collisonOn) {
+                worldX = oldX;
             }
         }
-        
-        // Atualiza para qual direção o jogador está virado
-        if(key.leftPressed){
-            direction = "left";
-        }
-        if(key.rightPressed){
-            direction = "right";
-        }
-        if(key.upPressed){
-            direction = "top";
-        }
-        if(key.downPressed){
-            direction = "bottom";
+
+        if (moveY != 0) {
+            String verticalDirection = moveY < 0 ? "top" : "bottom";
+            direction = verticalDirection;
+            int oldY = worldY;
+            worldY += moveY;
+            gp.cChecker.checkTile(this, verticalDirection);
+            if (collisonOn) {
+                worldY = oldY;
+            }
         }
     }
 

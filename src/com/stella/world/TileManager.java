@@ -24,8 +24,8 @@ public class TileManager {
     public TileManager(GamePanel gp) {
         this.gp = gp;
         
-        // Cria array para 16 tipos diferentes de tiles
-        tile = new Tile[16];
+        // Cria array para os tiles da fase 1
+        tile = new Tile[18];
         
         // Cria o mapa com o tamanho do mundo
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
@@ -47,19 +47,25 @@ public class TileManager {
             tile[i] = new Tile();
         }
 
-        // Carrega apenas os tiles usados pelo mapa atual.
-        // O map.txt usa 1 para piso e 2 para parede.
-        loadTile(0, "/res/tile/00.png", false);
-        loadTile(1, "/res/tile/armario.png", true);
-        loadTile(2, "/res/tile/armariodown.png", true);
-        loadTile(3, "/res/tile/floor1.png", false);
-        loadTile(4, "/res/tile/floor2.png", false);
-        loadTile(5, "/res/tile/floor3.png", false);
-        loadTile(6, "/res/tile/floor4.png", false);
-        loadTile(7, "/res/tile/floor5.png", false);
-        loadTile(8, "/res/tile/wall1.png", true);
-        loadTile(9, "/res/tile/wall2.png", true);
-        loadTile(10, "/res/tile/wall3.png", true);
+        // Carrega os tiles do conjunto FFP na ordem pedida.
+        loadTile(0, "/res/tile/FFP/00.png", false);
+        loadTile(1, "/res/tile/FFP/ffp_door1.png", true);
+        loadTile(2, "/res/tile/FFP/ffp_door2.png", true);
+        loadTile(3, "/res/tile/FFP/ffp_dooropen (1).png", true);
+        loadTile(4, "/res/tile/FFP/ffp_doorwh (1).png", true);
+        loadTile(5, "/res/tile/FFP/ffp_floor.png", false);
+        loadTile(6, "/res/tile/FFP/ffp_lwall.png", true);
+        loadTile(7, "/res/tile/FFP/ffp_rwall.png", true);
+        loadTile(8, "/res/tile/FFP/ffp_stage1.png", true);
+        loadTile(9, "/res/tile/FFP/ffp_stage2.png", true);
+        loadTile(10, "/res/tile/FFP/ffp_table1.png", true);
+        loadTile(11, "/res/tile/FFP/ffp_table2.png", true);
+        loadTile(12, "/res/tile/FFP/ffp_wall1.png", true);
+        loadTile(13, "/res/tile/FFP/ffp_wall2 _poster03.png", true);
+        loadTile(14, "/res/tile/FFP/ffp_wall2.png", true);
+        loadTile(15, "/res/tile/FFP/ffp_wall2_poster02 (1).png", true);
+        loadTile(16, "/res/tile/FFP/ffp_wall2_posters01.png", true);
+        loadTile(17, "/res/tile/FFP/ffp_wall3.png", true);
     }
 
     private void loadTile(int index, String path, boolean collision) {
