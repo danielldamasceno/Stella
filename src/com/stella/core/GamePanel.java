@@ -11,6 +11,7 @@
     import java.awt.event.ActionEvent;
     import java.awt.event.ActionListener;
     import java.io.IOException;
+    import java.io.InputStream;
     import javax.imageio.ImageIO;
     import javax.swing.JButton;
     import javax.swing.JPanel;   
@@ -141,13 +142,13 @@
             
             // Tenta carregar a imagem de fundo do menu e a textura dos botões
             try {
-                backgroundImage = ImageIO.read(getClass().getResourceAsStream("/res/menu.png"));
-                buttonTexture = ImageIO.read(getClass().getResourceAsStream("/res/tile/wall2.png"));
-                cutsceneIntroBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/cutscene/quartoinit.png"));
-                cutscenePsychologistBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/psicologa/psifala.png"));
-                cutsceneCharacterBackground = ImageIO.read(getClass().getResourceAsStream("/res/levelsimage/psicologa/mcfala.png"));
+                backgroundImage = loadImage("/res/menu.png");
+                buttonTexture = loadImage("/res/tile/escolassprite/wall2.png", "/res/tile/FFP/ffp_wall2.png", "/res/tile/wall2.png");
+                cutsceneIntroBackground = loadImage("/res/levelsimage/cutscene/quartoinit.png");
+                cutscenePsychologistBackground = loadImage("/res/levelsimage/psicologa/psifala.png");
+                cutsceneCharacterBackground = loadImage("/res/levelsimage/psicologa/mcfala.png");
                 cutsceneBackground = cutsceneIntroBackground;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("Erro ao carregar background ou textura de botões: " + e.getMessage());
             }
             
@@ -242,6 +243,21 @@
                 backButton.setVisible(visible);
                 restartButton.setVisible(visible);
                 nextFaseButton.setVisible(visible);
+            }
+
+            private BufferedImage loadImage(String... paths) throws IOException {
+                for (String path : paths) {
+                    try (InputStream is = getClass().getResourceAsStream(path)) {
+                        if (is != null) {
+                            BufferedImage img = ImageIO.read(is);
+                            if (img != null) {
+                                return img;
+                            }
+                        }
+                    }
+                    System.err.println("Recurso não encontrado: " + path);
+                }
+                return null;
             }
 
             private JButton createTexturedButton(String text, int x, int y, ActionListener listener) {
@@ -635,8 +651,8 @@
                 }
 
                 if (FASE_STATE == 1) {
-                    /*int tilePortalSaida = 30;  // ← tile onde ela teleporta (ajuste aqui)
-                    int tilePortalEntrada = 2; // ← tile onde ela reaparece (ajuste aqui)
+                    /*int tilePortalSaida = 30;  // tile onde ela teleporta (ajuste aqui)
+                    int tilePortalEntrada = 2; // tile onde ela reaparece (ajuste aqui)
                     int fim = tilePortalSaida * tileSz;
                     int inicio = tilePortalEntrada * tileSz;
                     if (player.worldX >= fim) {
@@ -767,6 +783,11 @@
                         currentDialogIndex = 0;
                         if (fromSafezonePsychDialog) {
                             fromSafezonePsychDialog = false;
+                            FASE_STATE = 2;
+                            setupGame();
+                            player.autoWalk = false;
+                            player.isMoving = false;
+                            updateCam();
                             gameState = PLAY_STATE;
                         } else if (phase1IntroActive) {
                             phase1IntroActive = false;

@@ -10,7 +10,7 @@ public class Entity {
     // Posição no mundo do jogo
     public int posY, posX, worldX, worldY;
     
-    // Área de colisão (hitbox) da entidade
+    // Area de colisao (hitbox) da entidade
     public Rectangle solidArea;
     
     // Para qual direção a entidade está virada (top, bottom, left, right)

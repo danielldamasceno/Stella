@@ -30,12 +30,9 @@ public class TileManager {
         // Cria o mapa com o tamanho do mundo
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
         
-        // Carrega as imagens de todos os tiles
+        map = "mapSchool.txt";
         getTileImage();
-        map="corredor.txt";
-        // Carrega o mapa do arquivo
         LoadMap();
-        
     }
 
     /**
@@ -47,7 +44,15 @@ public class TileManager {
             tile[i] = new Tile();
         }
 
-        // Carrega os tiles do conjunto FFP na ordem pedida.
+        String normalizedMap = map == null ? "" : map.toLowerCase();
+        if (normalizedMap.contains("school") || normalizedMap.contains("hallway") || normalizedMap.contains("fase2") || normalizedMap.contains("fase2")) {
+            loadSchoolTileSet();
+        } else {
+            loadFfpTileSet();
+        }
+    }
+
+    private void loadFfpTileSet() {
         loadTile(0, "/res/tile/FFP/00.png", false);
         loadTile(1, "/res/tile/FFP/ffp_door1.png", true);
         loadTile(2, "/res/tile/FFP/ffp_door2.png", true);
@@ -68,6 +73,28 @@ public class TileManager {
         loadTile(17, "/res/tile/FFP/ffp_wall3.png", true);
     }
 
+    private void loadSchoolTileSet() {
+        // Ordem alfabética dos tiles da escola para os mapas de school/hallway/fase2
+        loadTile(0, "/res/tile/escolassprite/00.png", false);
+        loadTile(1, "/res/tile/escolassprite/border.png", true);
+        loadTile(2, "/res/tile/escolassprite/door1.png", true);
+        loadTile(3, "/res/tile/escolassprite/door2.png", true);
+        loadTile(4, "/res/tile/escolassprite/floor.png", false);
+        loadTile(5, "/res/tile/escolassprite/l_borderwall.png", true);
+        loadTile(6, "/res/tile/escolassprite/lockerd_1.png", true);
+        loadTile(7, "/res/tile/escolassprite/lockerd_2.png", true);
+        loadTile(8, "/res/tile/escolassprite/lockerd_3.png", true);
+        loadTile(9, "/res/tile/escolassprite/lockeru_1.png", true);
+        loadTile(10, "/res/tile/escolassprite/lockeru_2.png", true);
+        loadTile(11, "/res/tile/escolassprite/lockeru_3.png", true);
+        loadTile(12, "/res/tile/escolassprite/r_borderwall.png", true);
+        loadTile(13, "/res/tile/escolassprite/wall1.png", true);
+        loadTile(14, "/res/tile/escolassprite/wall2.png", true);
+        loadTile(15, "/res/tile/escolassprite/wall3.png", true);
+        loadTile(16, "/res/tile/escolassprite/00.png", false);
+        loadTile(17, "/res/tile/escolassprite/floor.png", false);
+    }
+
     private void loadTile(int index, String path, boolean collision) {
         if (index < 0 || index >= tile.length) return;
         tile[index].collision = collision;
@@ -82,14 +109,32 @@ public class TileManager {
         }
     }
 
+    private InputStream openMapStream(String resourcePath) {
+        String[] candidates = new String[] {
+            resourcePath,
+            "/res/levels/fase2/" + resourcePath.replace("/res/levels/", ""),
+            "/res/levels/fase1/" + resourcePath.replace("/res/levels/", "")
+        };
+
+        for (String candidate : candidates) {
+            InputStream is = getClass().getResourceAsStream(candidate);
+            if (is != null) {
+                return is;
+            }
+        }
+        return null;
+    }
+
     /**
      * Carrega o mapa do arquivo /res/map.txt.
      * Cada linha tem números separados por espaço, cada número é um índice de tile.
      */
     public void LoadMap() {
-        try (InputStream is = getClass().getResourceAsStream("/res/levels/" + map)) {
+        getTileImage();
+        String mapPath = "/res/levels/" + map;
+        try (InputStream is = openMapStream(mapPath)) {
             if (is == null) {
-                System.err.println("Arquivo de mapa não encontrado");
+                System.err.println("Arquivo de mapa não encontrado: " + mapPath);
                 return;
             }
 
@@ -139,7 +184,7 @@ public class TileManager {
                 int ScreenX = WorldX - gp.cameraX;
                 int ScreenY = WorldY - gp.cameraY;
                 
-                // Índice do tile nesta posição
+                // Indice do tile nesta posicao
                 int tilenum = mapTileNum[j][i];
                 
                 

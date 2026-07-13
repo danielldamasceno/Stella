@@ -22,12 +22,26 @@ public class SpawnManager {
             for (int row = 0; row < gp.maxWorldRow; row++)
                 spawnTileNum[col][row] = 0;
 
-        try (InputStream is = getClass().getResourceAsStream("/res/levels/" + fileName)) {
-            if (is == null) {
+        String[] candidates = new String[] {
+            "/res/levels/" + fileName,
+            "/res/levels/fase2/" + fileName,
+            "/res/levels/fase1/" + fileName
+        };
+
+        InputStream is = null;
+        for (String candidate : candidates) {
+            is = getClass().getResourceAsStream(candidate);
+            if (is != null) {
+                break;
+            }
+        }
+
+        try (InputStream stream = is) {
+            if (stream == null) {
                 System.err.println("Arquivo de spawn não encontrado: " + fileName);
                 return;
             }
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
             int row = 0;
             while (row < gp.maxWorldRow) {
                 String line = br.readLine();

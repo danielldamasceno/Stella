@@ -29,7 +29,7 @@ public class AssetSetter {
         return switch (faseState) {
             case 1 -> "fase1/maptile.txt";
             case 2 -> "mapSchool.txt";
-            case 3 -> "map2.txt";
+            case 3 -> "mapSchool.txt";
             default -> "fase1/maptile.txt";
         };
     }
