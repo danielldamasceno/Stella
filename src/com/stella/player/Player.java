@@ -140,10 +140,10 @@ public class Player extends Entity {
         int moveX = 0;
         int moveY = 0;
 
-        if (key.leftPressed) moveX -= 3;
-        if (key.rightPressed) moveX += 3;
-        if (key.upPressed) moveY -= 3;
-        if (key.downPressed) moveY += 3;
+        if (key.leftPressed) moveX -= 6;
+        if (key.rightPressed) moveX += 6;
+        if (key.upPressed) moveY -= 6;
+        if (key.downPressed) moveY += 6;
 
         isMoving = moveX != 0 || moveY != 0;
         if (!isMoving) {

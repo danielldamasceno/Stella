@@ -1,5 +1,6 @@
     package com.stella.core;
     import java.awt.Color;
+    import com.stella.assets.SomJogo;
     import java.awt.Dimension;
     import java.awt.Font;
     import java.awt.FontMetrics;
@@ -68,7 +69,8 @@
 
             
 
-        public int FASE_STATE = 2;
+        // Começa na fase 1 por padrão para abrir na tela de título
+        public int FASE_STATE = 1;
         private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
         private long fadeStartTime = -1;   // quando o fade começou
         private String[] dialogue = new String[20];
@@ -88,6 +90,7 @@
         private boolean hideSequenceActive = false;
         private boolean playerHidden = false;
         private boolean fromSafezonePsychDialog = false;
+        private boolean schoolCompleted = false;
         private long hideSequenceStartedAt = -1;
         private static final int HIDE_SEQUENCE_DURATION_MS = 5000;
         private int hideCountdownSeconds = 5;
@@ -326,6 +329,11 @@
                 tileManager.LoadMap();
                 player.setStartPosition(FASE_STATE);
                 aSetter.setObject(FASE_STATE);
+                        // Ao iniciar a fase da escola (FASE_STATE == 2) mostrar diálogo inicial
+                                if (FASE_STATE == 2) {
+                                    startDialogue(PLAY_STATE, "os meninos faziam bullying comigo, tive que tentar encontrar a professora para conversar com ela");
+                                    // não retorna aqui: mantém a inicialização da fase e apenas inicia o diálogo
+                                }
                 som.tocarTrilha("leticia-trilha-ambiente-2026-07-13-06_54.wav");
 
             }
@@ -493,14 +501,21 @@
                     "Psicóloga: \"O que você viveu é uma situação de **violência contra a criança**. Pessoas que observam ou tentam se aproximar de crianças de forma suspeita representam um risco e nunca devem ser ignoradas.\"",
                     "Psicóloga: \"Nesses momentos, o mais importante é não se aproximar, procurar um adulto de confiança e contar imediatamente o que aconteceu. Mesmo que você não tenha certeza, é sempre melhor pedir ajuda.\"",
                     "Psicóloga: \"Você fez a escolha certa ao não entrar naquela sala.\"",
-                    "Psicóloga: \"Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?\""
+                    "Psicóloga: \"Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?\"",
+                    "Foi na escola, os alunos me perseguiam por eu ser menina..."
                 };
-                cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa"};
+                cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa", "Personagem principal"};
                 cutsceneBackground = cutscenePsychologistBackground;
                 cutsceneIndex = 0;
                 currentDialogIndex = 0;
                 setDialog(cutsceneLines);
                 fromSafezonePsychDialog = true;
+                // Só vai para a vitória se já tiver concluído a fase da escola
+                if (schoolCompleted) {
+                    nextGameStateAfterDialog = VICTORY_STATE;
+                } else {
+                    nextGameStateAfterDialog = PLAY_STATE;
+                }
                 key.interactPressed = false;
                 key.enterPressed = false;
                 player.autoWalk = false;
@@ -515,6 +530,10 @@
             public void nextLevel() {
                 nextFaseButton.setVisible(false);
                 stopGameThread();
+                // Se estamos saindo da fase 2, marcamos a escola como concluída
+                if (FASE_STATE == 2) {
+                    schoolCompleted = true;
+                }
                 FASE_STATE++;
                 setupGame();
                 player.autoWalk = false;
@@ -522,7 +541,10 @@
                 updateCam();
                 fadeAlpha = 1f;
                 fadeStartTime = -1;
-                gameState = FADE_OUT_STATE;
+                // Se o setup disparou um diálogo, não sobrescreve o estado de diálogo
+                if (gameState != DIALOG_STATE) {
+                    gameState = FADE_OUT_STATE;
+                }
                 if (GameThread == null || !GameThread.isAlive()) {
                     startGameThread();
                 }
@@ -547,7 +569,10 @@
                     loadingStartTime = -1;
                     fadeAlpha = 1f;
                     fadeStartTime = -1;
-                    gameState = FADE_OUT_STATE;
+                    // Preserva diálogo caso tenha sido iniciado durante o carregamento
+                    if (gameState != DIALOG_STATE) {
+                        gameState = FADE_OUT_STATE;
+                    }
                 }
             }           
             public void restartGame() {
@@ -656,7 +681,21 @@
 
                 if (FASE_STATE == 1) {
                     /*int tilePortalSaida = 30;  // tile onde ela teleporta (ajuste aqui)
-                    int tilePortalEntrada = 2; // tile onde ela reaparece (ajuste aqui)
+                            // Ao encostar na professora, mostrar a tela da psicóloga e iniciar diálogo
+                            String[] psychLines = new String[] { "Ainda bem que você procurou uma autoridade para te ajudar, esse tipo de violência deve ser evitada!" };
+                            String[] psychSpeakers = new String[] { "psicologa" };
+                            cutsceneLines = psychLines;
+                            cutsceneSpeakers = psychSpeakers;
+                            cutsceneBackground = cutscenePsychologistBackground;
+                            setDialog(cutsceneLines);
+                            currentDialogIndex = 0;
+                            nextGameStateAfterDialog = VICTORY_STATE;
+                            key.interactPressed = false;
+                            key.enterPressed = false;
+                            player.autoWalk = false;
+                            player.isMoving = false;
+                            fromSafezonePsychDialog = false; // evitar comportamento antigo
+                            gameState = CUTSCENE_2_STATE;
                     int fim = tilePortalSaida * tileSz;
                     int inicio = tilePortalEntrada * tileSz;
                     if (player.worldX >= fim) {
@@ -673,8 +712,21 @@
 
                 if (FASE_STATE == 2) {
                     if (player.checkSafezone()) {
-                        gameState = FADE_IN_STATE;
+                        // Ao encostar na professora: mostrar a cena da psicóloga com uma linha curta
+                        schoolCompleted = true;
+                        cutsceneLines = new String[] { "Ainda bem que você conseguiu escapar!" };
+                        cutsceneSpeakers = new String[] { "psicologa" };
+                        cutsceneBackground = cutscenePsychologistBackground;
+                        setDialog(cutsceneLines);
                         currentDialogIndex = 0;
+                        fromSafezonePsychDialog = true;
+                        // Se já concluiu a escola, segue para vitória; caso contrário volta ao jogo
+                        nextGameStateAfterDialog = schoolCompleted ? VICTORY_STATE : PLAY_STATE;
+                        key.interactPressed = false;
+                        key.enterPressed = false;
+                        player.autoWalk = false;
+                        player.isMoving = false;
+                        gameState = CUTSCENE_2_STATE;
                     }
                     for (int i = 0; i < obj.length; i++) {
                         if (obj[i] instanceof Enemy) {
@@ -785,6 +837,13 @@
                     currentDialogIndex++;
                     if (currentDialogIndex >= dialogueLength) {
                         currentDialogIndex = 0;
+                        // Se este cutscene tinha como próximo estado a vitória, vai direto para VICTORY
+                        if (nextGameStateAfterDialog == VICTORY_STATE) {
+                            nextGameStateAfterDialog = PLAY_STATE;
+                            gameState = VICTORY_STATE;
+                            return;
+                        }
+
                         if (fromSafezonePsychDialog) {
                             fromSafezonePsychDialog = false;
                             FASE_STATE = 2;
@@ -819,6 +878,7 @@
                 key.enterPressed = false;
                 gameState = CUTSCENE_2_STATE;
             }
+
             private void hideSequenceState() {
                 player.update();
                 player.autoWalk = false;
@@ -922,7 +982,8 @@
             private void drawObjects(Graphics2D g2) {
                 for (int i = 0; i < obj.length; i++) {
                     if (obj[i] == null) continue;
-                    if (obj[i].ally && FASE_STATE == 2) continue; // não desenha a professora na fase 2
+                    // Na fase 2, normalmente ocultamos aliados, exceto a professora (nome "Teacher").
+                    if (obj[i].ally && FASE_STATE == 2 && !"Teacher".equals(obj[i].name)) continue;
                     obj[i].draw(g2, this);
                 }
             }
@@ -1188,7 +1249,7 @@
 
                     g2.setColor(Color.GREEN);
                     g2.setFont(new Font("Arial", Font.BOLD, 56));
-                    String ending = "Você reencontrou a Professora!";
+                    String ending = "Parabéns! Fim do jogo";
                     int ew = g2.getFontMetrics().stringWidth(ending);
                     g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
                     restartButton.setVisible(true);
