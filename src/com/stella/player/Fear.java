@@ -15,15 +15,6 @@ public class Fear {
     private static double MAX_EXTRA = 0.04;       // extra quando a distância é 0
     private static double DECREASE_RATE = 0.02;   // descida fixa por atualização quando longe
     
-    /*
-    private static final double CLOSE_RETURN_RATE = 0.01; // taxa de redução gradual por atualização
-    private static final double CLOSE_THRESHOLD_HIGH = 0.6; // abaixo disso, medo máximo é limitado a 60%
-    private static final double CLOSE_THRESHOLD_MID = 0.4;  // abaixo disso, medo máximo é limitado a 40%
-    private static final double CLOSE_THRESHOLD_LOW = 0.2;  // abaixo disso, medo máximo é limitado a 20%
-    private static final double CLOSE_MAX_H = 0.6;       // medo máximo permitido quando muito perto
-    private static final double CLOSE_MAX_M = 0.4;
-    private static final double CLOSE_MAX_L = 0.2;
-    */
 
    public static void setFearDificult(int dificulty) {
         switch (dificulty) {
@@ -41,9 +32,9 @@ public class Fear {
                 break;
             case 2: //dificil
                 distanceTillFear = 500;
-                BASE_INCREASE = 0.00015; // taxa de aumento
-                MAX_EXTRA = 0.065;       // aumento extra
-                DECREASE_RATE = 0.015;   // taxa de diminuição
+                BASE_INCREASE = 0.00015; 
+                MAX_EXTRA = 0.065;       
+                DECREASE_RATE = 0.015;   
                 break;
         }
     }
@@ -69,27 +60,13 @@ public class Fear {
             situation -= DECREASE_RATE * 0.16; // multiplicado por 0.16 para ajustar à taxa de atualização
         }
 
-        // Aplica limites gerais
+        // Aplica limites
         if (distIn > 0.87) { // GAME OVER! condição final de medo.
             situation = 1;
         }
         if (situation > 1) situation = 1;
         if (situation < 0) situation = 0;
 
-        // Se estiver abaixo do limiar, reduzir gradualmente até CLOSE_MAX 
-        /* 
-        if (distIn < CLOSE_THRESHOLD_HIGH && situation > CLOSE_MAX_H) {
-            situation -= CLOSE_RETURN_RATE * 0.16; // aplica redução gradual
-            if (situation < CLOSE_MAX_H) situation = CLOSE_MAX_H;
-        }
-        if (distIn < CLOSE_THRESHOLD_MID && situation > CLOSE_MAX_M) {
-            situation -= CLOSE_RETURN_RATE * 0.16; // aplica redução gradual
-            if (situation < CLOSE_MAX_M) situation = CLOSE_MAX_M;
-        }
-        if (distIn < CLOSE_THRESHOLD_LOW && situation > CLOSE_MAX_L) {
-            situation -= CLOSE_RETURN_RATE * 0.16; // aplica redução gradual
-            if (situation < CLOSE_MAX_L) situation = CLOSE_MAX_L;
-        } */
     }
 
     public static String getFearLevel() {

@@ -666,8 +666,8 @@
                         if (obj[i] instanceof com.stella.entities.InteractionBlock block) {
                             if (block.isNear(player) && !block.used) {
                                 block.used = true;
-                                // Se for a safezone (agora com prompt "Acessar sala"), abre diálogo com a psicóloga
-                                if ("Acessar sala".equalsIgnoreCase(block.promptText)) {
+                                // Se for a safezone (com prompt que contenha "Acessar sala"), abre diálogo com a psicóloga
+                                if (block.promptText != null && block.promptText.toLowerCase().contains("acessar sala")) {
                                     startPsychologistConversation();
                                 } else {
                                     pendingHideSequence = true;

@@ -30,7 +30,6 @@ public class TileManager {
         // Cria o mapa com o tamanho do mundo
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
         
-        map = "mapSchool.txt";
         getTileImage();
         LoadMap();
     }
@@ -74,24 +73,24 @@ public class TileManager {
     }
 
     private void loadSchoolTileSet() {
-        // Ordem alfabética dos tiles da escola para os mapas de school/hallway/fase2
+        // Ordem numérica dos tiles da escola para os mapas da escola
         loadTile(0, "/res/tile/escolassprite/00.png", false);
         loadTile(1, "/res/tile/escolassprite/border.png", true);
         loadTile(2, "/res/tile/escolassprite/door1.png", true);
         loadTile(3, "/res/tile/escolassprite/door2.png", true);
         loadTile(4, "/res/tile/escolassprite/floor.png", false);
-        loadTile(5, "/res/tile/escolassprite/l_borderwall.png", true);
-        loadTile(6, "/res/tile/escolassprite/lockerd_1.png", true);
-        loadTile(7, "/res/tile/escolassprite/lockerd_2.png", true);
-        loadTile(8, "/res/tile/escolassprite/lockerd_3.png", true);
-        loadTile(9, "/res/tile/escolassprite/lockeru_1.png", true);
-        loadTile(10, "/res/tile/escolassprite/lockeru_2.png", true);
-        loadTile(11, "/res/tile/escolassprite/lockeru_3.png", true);
+        loadTile(5, "/res/tile/escolassprite/lockerd_1.png", true);
+        loadTile(6, "/res/tile/escolassprite/lockerd_2.png", true);
+        loadTile(7, "/res/tile/escolassprite/lockerd_3.png", true);
+        loadTile(8, "/res/tile/escolassprite/lockeru_1.png", true);
+        loadTile(9, "/res/tile/escolassprite/lockeru_2.png", true);
+        loadTile(10, "/res/tile/escolassprite/lockeru_3.png", true);
+        loadTile(11, "/res/tile/escolassprite/l_borderwall.png", true);
         loadTile(12, "/res/tile/escolassprite/r_borderwall.png", true);
         loadTile(13, "/res/tile/escolassprite/wall1.png", true);
         loadTile(14, "/res/tile/escolassprite/wall2.png", true);
         loadTile(15, "/res/tile/escolassprite/wall3.png", true);
-        loadTile(16, "/res/tile/escolassprite/00.png", false);
+        loadTile(16, "/res/tile/escolassprite/floor.png", false);
         loadTile(17, "/res/tile/escolassprite/floor.png", false);
     }
 
@@ -130,6 +129,12 @@ public class TileManager {
      * Cada linha tem números separados por espaço, cada número é um índice de tile.
      */
     public void LoadMap() {
+        switch (gp.FASE_STATE) {
+            case 1 -> map = "fase1/maptile.txt";
+            case 2 -> map = "fase2/mapSchool.txt";
+            //case 3 -> map = "fase2/mapSchool2.txt";
+            default -> map = "fase1/maptile.txt";
+        }
         getTileImage();
         String mapPath = "/res/levels/" + map;
         try (InputStream is = openMapStream(mapPath)) {

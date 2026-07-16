@@ -6,6 +6,7 @@ import com.stella.entities.Enemy;
 import com.stella.entities.InteractionBlock;
 import com.stella.entities.StepDialogueObject;
 import com.stella.entities.superObject;
+import com.stella.util.RandomUtils;
 
 public class AssetSetter {
     GamePanel gp;
@@ -56,10 +57,11 @@ public class AssetSetter {
                 } catch (Exception ignored) {}
             }
         }
-        scanMapForSpawns();
+        System.out.println(FASE_STATE);
+        scanMapForSpawns(FASE_STATE);
 
         // Garante que a professora (ally) exista na fase da escola
-        if (gp.FASE_STATE == 2) {
+        /*if (gp.FASE_STATE == 2) {
             try {
                 Ally teacher = new Ally();
                 // Define tamanho próximo ao usado para aliados nos spawns
@@ -73,14 +75,14 @@ public class AssetSetter {
                 // Coloca na posição reservada para aliado (índice 0)
                 gp.obj[0] = teacher;
             } catch (Exception ignored) {}
-        }
+        }*/
     }
 
     public String getTileMapFile(int faseState) {
         return switch (faseState) {
             case 1 -> "fase1/maptile.txt";
-            case 2 -> "mapSchool.txt";
-            case 3 -> "mapSchool.txt";
+            case 2 -> "fase2/spawnMapSchool.txt";
+            case 3 -> "fase2/mapSchool.txt";
             default -> "fase1/maptile.txt";
         };
     }
@@ -88,133 +90,84 @@ public class AssetSetter {
     public String getSpawnMapFile(int faseState) {
         return switch (faseState) {
             case 1 -> "fase1/mapspawn.txt";
-            case 2 -> "spawnMapSchool.txt";
-            case 3 -> "spawnMap2.txt";
-            case 4 -> "spawnMapSchool.txt";
+            case 2 -> "fase2/spawnMapSchool.txt";
+            case 3 -> "fase2/spawnMap2.txt";
+            case 4 -> "fase2/spawnMapSchool.txt";
             default -> null;
         };
     }
 
-    private void resetNPC() {
+     private void resetNPC() {
         for (int i = 0; i < gp.obj.length; i++) {
             gp.obj[i] = null;
         }
     }
 
-    private void scanMapForSpawns() {
+    private void scanMapForSpawns(int faseState) {
         int enemyIndex = 1; 
-        // Cria lista de tiles do tipo 4 (piso) para uso em spawns aleatórios
-        java.util.List<int[]> floorTiles = new java.util.ArrayList<>();
-        for (int c = 0; c < gp.maxWorldCol; c++) {
-            for (int r = 0; r < gp.maxWorldRow; r++) {
-                try {
-                    if (gp.tileManager.mapTileNum[c][r] == 4) {
-                        floorTiles.add(new int[] {c, r});
-                    }
-                } catch (Exception ignored) {}
-            }
-        }
 
         for (int col = 0; col < gp.maxWorldCol; col++) {
             for (int row = 0; row < gp.maxWorldRow; row++) {
-                if (enemyIndex >= gp.obj.length) {
-                    return;
-                }
-
                 int code = gp.spawnM.getSpawnCode(col, row);
                 if (code == 0) continue;
 
-                // Para a fase "mapSchool" (FASE_STATE == 2), só spawnar inimigos nos tiles de piso (código 4)
-                int spawnCol = col;
-                int spawnRow = row;
-                if (gp.FASE_STATE == 2 && (code == 12 || code == 13)) {
-                    int mapTileCode = gp.tileManager.mapTileNum[col][row];
-                    if (mapTileCode != 4) {
-                        // procura o tile 4 mais próximo (raio até 3)
-                        int[] found = findNearestTileOfType(col, row, 4, 6);
-                        if (found == null) continue; // nada encontrado -> pula spawn
-                        spawnCol = found[0];
-                        spawnRow = found[1];
-                    }
-                }
-
-                if (gp.FASE_STATE == 1) {
-                    if (code == 1 && enemyIndex < gp.obj.length) {
-                            InteractionBlock block = new InteractionBlock(gp);
-                            placeAt(block, spawnCol, spawnRow, 1, 1);
-                        block.dialogueOptions = getDoorDialogueOptions();
-                        gp.obj[enemyIndex++] = block;
-                    }
-                    if (code == 30 && enemyIndex < gp.obj.length) {
-                        InteractionBlock block = new InteractionBlock(gp);
-                            placeAt(block, spawnCol, spawnRow, 1, 1);
-                        block.dialogueLines = new String[] {"Com muito custo, achei a sala."};
-                        block.promptText = "Acessar sala";
-                        gp.obj[enemyIndex++] = block;
-                    }
-                    continue;
-                }
-
                 switch (code) {
                     case 1 -> { // porta/interação da fase 1
-                        if (enemyIndex < gp.obj.length) {
+                        if(faseState == 1) {
+                            if (enemyIndex < gp.obj.length) {
                             InteractionBlock block = new InteractionBlock(gp);
-                            placeAt(block, spawnCol, spawnRow, 1, 1);
+                            placeAt(block, col, row, 1, 1);
                             block.dialogueOptions = getDoorDialogueOptions();
                             gp.obj[enemyIndex++] = block;
-                        }
-                    }
-                    case 11 -> { // aliado
-                        Ally a = new Ally();
-                        placeAt(a, spawnCol, spawnRow, 2, 3);
-                        gp.obj[0] = a;
-                    }
-                    case 56 -> { // aliado (marcador 56 no spawnMap)
-                        Ally a = new Ally();
-                        placeAt(a, spawnCol, spawnRow, 2, 3);
-                        gp.obj[0] = a;
-                    }
-                    case 4 -> { // inimigo dinamico (distribuído aleatoriamente sobre tiles do tipo 4)
-                        if (enemyIndex < gp.obj.length && !floorTiles.isEmpty()) {
-                            int spawnCount = 2;
-                            for (int s = 0; s < spawnCount && enemyIndex < gp.obj.length && !floorTiles.isEmpty(); s++) {
-                                int idx = com.stella.util.RandomUtils.randInt(0, floorTiles.size() - 1);
-                                int[] chosen = floorTiles.remove(idx);
-                                Enemy e = new Enemy(gp);
-                                placeAt(e, chosen[0], chosen[1], 3, 3);
-                                e.enemyType = "static";
-                                gp.obj[enemyIndex++] = e;
                             }
                         }
                     }
-                    case 13 -> { // inimigo fixo (distribuído aleatoriamente sobre tiles do tipo 4)
-                        if (enemyIndex < gp.obj.length && !floorTiles.isEmpty()) {
-                            int spawnCount = 2;
-                            for (int s = 0; s < spawnCount && enemyIndex < gp.obj.length && !floorTiles.isEmpty(); s++) {
-                                int idx = com.stella.util.RandomUtils.randInt(0, floorTiles.size() - 1);
-                                int[] chosen = floorTiles.remove(idx);
-                                Enemy e = new Enemy(gp);
-                                placeAt(e, chosen[0], chosen[1], 3, 3);
-                                e.enemyType = (s == 0) ? "static" : "persuer";
-                                gp.obj[enemyIndex++] = e;
+
+                    case 16 -> { // aliado
+                        if (faseState == 2) {
+                            Ally a = new Ally();
+                            placeAt(a, col, row, 2, 3);
+                            gp.obj[0] = a;
+                        }
+                    }
+                    case 17 -> { // inimigo dinamico
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                if(RandomUtils.randInt(1, 4) != 1) {
+                                    Enemy e = new Enemy(gp);
+                                    placeAt(e, col, row, 3, 3);
+                                    e.enemyType = "static";
+                                    gp.obj[enemyIndex++] = e;
+                                }
+                            
                             }
                         }
                     }
-                    case 15 -> { // objeto que mostra diálogo ao passar por cima
-                        StepDialogueObject step = new StepDialogueObject(gp);
-                        placeAt(step, spawnCol, spawnRow, 1, 1);
-                        step.dialogueLines = new String[] {
-                            "Você passou por esta área.",
-                            "Este é um aviso automático."
-                        };
-                        gp.obj[enemyIndex++] = step;
+                    case 18 -> { // inimigo fixo
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                if (RandomUtils.randInt(1, 2) == 1){
+                                    Enemy e = new Enemy(gp);
+                                    placeAt(e, col, row, 3, 3);
+                                    e.enemyType = "static";
+                                    gp.obj[enemyIndex++] = e;
+                                } else {
+                                    Enemy e = new Enemy(gp);
+                                    placeAt(e, col, row, 3, 3);
+                                    e.enemyType = "persuer";
+                                    gp.obj[enemyIndex++] = e;
+                                }
+                            }
+                        }
                     }
-                    case 30 -> { // safezone
+                    case 19 -> { // safezone
+                        if (faseState == 1) {
                         InteractionBlock block = new InteractionBlock(gp);
-                        placeAt(block, spawnCol, spawnRow, 1, 1);
+                        placeAt(block, col, row, 1, 1);
                         block.dialogueLines = new String[] {"Com muito custo, achei a sala."};
-                        block.promptText = "Acessar sala";
+                        block.promptText = "Acessar sala (aperte E)";
                         gp.obj[enemyIndex++] = block;
+                        }
                     }
                 }
             }
@@ -253,10 +206,10 @@ public class AssetSetter {
 
     /** Posiciona qualquer superObject (Enemy, Ally, etc) num tile do mapa. */
     private void placeAt(superObject obj, int col, int row, int widthInTiles, int heightInTiles) {
-        obj.WorldX = (col - 1) * gp.tileSz + (gp.tileSz / 2.0) - (obj.width / 2.0);
-        obj.WorldY = (row - 2) * gp.tileSz + (gp.tileSz / 2.0) - (obj.height / 2.0);
-        obj.width = Math.max(8, widthInTiles * gp.tileSz / 2);
-        obj.height = Math.max(8, heightInTiles * gp.tileSz / 2);
+        obj.WorldX = (col-1) * gp.tileSz + gp.tileSz / 2.0;
+        obj.WorldY = (row-2) * gp.tileSz + gp.tileSz / 2.0;
+        obj.width = widthInTiles * gp.tileSz;
+        obj.height = heightInTiles * gp.tileSz;
         obj.enemy = (obj instanceof Enemy);
         obj.ally = (obj instanceof Ally);
     }
