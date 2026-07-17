@@ -61,7 +61,7 @@ public class Fear {
         }
 
         // Aplica limites
-        if (distIn > 0.87) { // GAME OVER! condição final de medo.
+        if (distIn > 0.82) { // GAME OVER! condição final de medo.
             situation = 1;
         }
         if (situation > 1) situation = 1;
