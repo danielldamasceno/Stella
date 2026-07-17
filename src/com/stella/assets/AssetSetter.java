@@ -36,10 +36,15 @@ public class AssetSetter {
         return null;
     }
 
-    public void setObject(int FASE_STATE) {
+    public void setObject(int FASE_STATE, String mapFile) {
+        String spawnFile = null;
         resetNPC();
+        if (mapFile == null) {
+            spawnFile = getSpawnMapFile(FASE_STATE);
+        } else {
+            spawnFile = mapFile;
+        }
 
-        String spawnFile = getSpawnMapFile(FASE_STATE);
         if (spawnFile == null) return;
 
         gp.spawnM.loadSpawnMap(spawnFile);
@@ -57,25 +62,8 @@ public class AssetSetter {
                 } catch (Exception ignored) {}
             }
         }
-        System.out.println(FASE_STATE);
         scanMapForSpawns(FASE_STATE);
 
-        // Garante que a professora (ally) exista na fase da escola
-        /*if (gp.FASE_STATE == 2) {
-            try {
-                Ally teacher = new Ally();
-                // Define tamanho próximo ao usado para aliados nos spawns
-                teacher.width = Math.max(8, 3 * gp.tileSz / 2);
-                teacher.height = Math.max(8, 3 * gp.tileSz / 2);
-                // Posicionamento em coordenadas do mundo conforme pedido
-                teacher.WorldX = 500.0;
-                teacher.WorldY = 3104.0;
-                teacher.enemy = false;
-                teacher.ally = true;
-                // Coloca na posição reservada para aliado (índice 0)
-                gp.obj[0] = teacher;
-            } catch (Exception ignored) {}
-        }*/
     }
 
     public String getTileMapFile(int faseState) {
@@ -91,19 +79,17 @@ public class AssetSetter {
         return switch (faseState) {
             case 1 -> "fase1/mapspawn.txt";
             case 2 -> "fase2/spawnMapSchool.txt";
-            case 3 -> "fase2/spawnMap2.txt";
-            case 4 -> "fase2/spawnMapSchool.txt";
             default -> null;
         };
     }
 
-     private void resetNPC() {
+    public void resetNPC() {
         for (int i = 0; i < gp.obj.length; i++) {
             gp.obj[i] = null;
         }
     }
 
-    private void scanMapForSpawns(int faseState) {
+    public void scanMapForSpawns(int faseState) {
         int enemyIndex = 1; 
 
         for (int col = 0; col < gp.maxWorldCol; col++) {
@@ -115,10 +101,21 @@ public class AssetSetter {
                     case 1 -> { // porta/interação da fase 1
                         if(faseState == 1) {
                             if (enemyIndex < gp.obj.length) {
-                            InteractionBlock block = new InteractionBlock(gp);
-                            placeAt(block, col, row, 1, 1);
-                            block.dialogueOptions = getDoorDialogueOptions();
-                            gp.obj[enemyIndex++] = block;
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.dialogueOptions = getDoorDialogueOptions();
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+
+                    case 2 -> { // porta/interação da fase 2
+                        if (faseState == 2 || faseState == 3) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Sair da sala (aperte E)";
+                                gp.obj[enemyIndex++] = block;
                             }
                         }
                     }
@@ -167,6 +164,67 @@ public class AssetSetter {
                         block.dialogueLines = new String[] {"Com muito custo, achei a sala."};
                         block.promptText = "Acessar sala (aperte E)";
                         gp.obj[enemyIndex++] = block;
+                        }
+                    }
+                    case 20 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Sala de Ciências (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 21 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Sala de Matemática (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 22 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Sala de Português (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 23 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Laboratório de Informática (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 24 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.promptText = "Laboratório de Física (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 25 -> {
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp);
+                                placeAt(block, col, row, 1, 1);
+                                block.dialogueLines = new String[] {"Essa porta está trancada!"};
+                                block.promptText = "Sala (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
                         }
                     }
                 }

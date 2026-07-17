@@ -71,6 +71,8 @@
 
         // Começa na fase 1 por padrão para abrir na tela de título
         public int FASE_STATE = 1;
+        public int roomNumber;
+        public String mapFile = "fase1/maptile.txt"; // Arquivo de mapa inicial
         private float fadeAlpha = 0f;      // 0 = transparente, 1 = preto total
         private long fadeStartTime = -1;   // quando o fade começou
         private String[] dialogue = new String[20];
@@ -326,9 +328,14 @@
              */
             public void setupGame() {
                 tileManager.map = aSetter.getTileMapFile(FASE_STATE);
-                tileManager.LoadMap();
+                switch (FASE_STATE) {
+                    case 1 -> mapFile = "fase1/maptile.txt";
+                    case 2 -> mapFile = "fase2/mapSchool.txt";
+                    default -> mapFile = "fase1/maptile.txt";
+                }
+                tileManager.LoadMap(mapFile);
                 player.setStartPosition(FASE_STATE);
-                aSetter.setObject(FASE_STATE);
+                aSetter.setObject(FASE_STATE, null);
                         // Ao iniciar a fase da escola (FASE_STATE == 2) mostrar diálogo inicial
                                 if (FASE_STATE == 2) {
                                     startDialogue(PLAY_STATE, "os meninos faziam bullying comigo, tive que tentar encontrar a professora para conversar com ela");
@@ -550,6 +557,30 @@
                 }
                 requestFocusInWindow();
             }
+            
+            private void enterRoom() {
+                player.lastWorldX = player.worldX;
+                player.lastWorldY = player.worldY;
+                mapFile = "fase2/randomRoom" + roomNumber + ".txt";
+
+                tileManager.LoadMap(mapFile);
+                aSetter.setObject(FASE_STATE, mapFile);
+
+                updateCam();
+            }
+
+            private void backFromRoom() {
+                player.worldX = player.lastWorldX;
+                player.worldY = player.lastWorldY;
+                player.currentRoom = null;
+                
+                tileManager.LoadMap("fase2/mapSchool.txt");
+                aSetter.setObject(FASE_STATE, null);
+                mapFile = null;
+
+                updateCam();
+            }
+
             private void loadingState() {
                 long now = System.currentTimeMillis();
                 if (loadingStartTime < 0) loadingStartTime = now;
@@ -665,15 +696,88 @@
                         if (obj[i] == null) continue;
                         if (obj[i] instanceof com.stella.entities.InteractionBlock block) {
                             if (block.isNear(player) && !block.used) {
-                                block.used = true;
-                                // Se for a safezone (com prompt que contenha "Acessar sala"), abre diálogo com a psicóloga
-                                if (block.promptText != null && block.promptText.toLowerCase().contains("acessar sala")) {
-                                    startPsychologistConversation();
-                                } else {
-                                    pendingHideSequence = true;
-                                    startDialogue(PLAY_STATE, block.getDialogueLines());
+                                boolean isRoomPortal = block.promptText != null && (
+                                    block.promptText.contains("Sala de Ciências") ||
+                                    block.promptText.contains("Sala de Matemática") ||
+                                    block.promptText.contains("Sala de Português") ||
+                                    block.promptText.contains("Laboratório de Informática") ||
+                                    block.promptText.contains("Laboratório de Física")
+                                );
+
+                                if (!isRoomPortal) {
+                                    block.used = true;
                                 }
-                                break;
+
+                                // Se for a safezone (com prompt que contenha "Acessar sala"), abre diálogo com a psicóloga
+                                switch(block.promptText) {
+                                    case "Acessar sala (aperte E)" -> {
+                                        if (FASE_STATE == 1) {
+                                            startPsychologistConversation();
+                                        }
+                                    }
+                                    case "Sala de Ciências (aperte E)" -> { //sala aleatoria 1
+                                        if (FASE_STATE == 2) {
+                                            roomNumber = 1;
+                                            enterRoom();
+
+                                            player.currentRoom = "room1";
+                                            player.worldX = 17 * tileSz;
+                                            player.worldY = 15 * tileSz;
+                                        }
+                                    }
+                                    case "Sala de Matemática (aperte E)" -> { //sala aleatoria 2
+                                        if (FASE_STATE == 2) {
+                                            roomNumber = 2;
+                                            enterRoom();
+
+                                            player.currentRoom = "room1";
+                                            player.worldX = 17 * tileSz;
+                                            player.worldY = 16 * tileSz;
+                                        }
+                                    }
+                                    case "Sala de Português (aperte E)" -> { //sala aleatoria 3
+                                        if (FASE_STATE == 2) {
+                                            roomNumber = 3;
+                                            enterRoom();
+
+                                            player.currentRoom = "room1";
+                                            player.worldX = 17 * tileSz;
+                                            player.worldY = 16 * tileSz;
+                                        }
+                                    }
+                                    case "Laboratório de Informática (aperte E)" -> { //sala aleatoria 4
+                                        if (FASE_STATE == 2) {
+                                            roomNumber = 4;
+                                            enterRoom();
+
+                                            player.currentRoom = "room1";
+                                            player.worldX = 8 * tileSz;
+                                            player.worldY = 16 * tileSz;
+                                        }
+                                    }
+                                    case "Laboratório de Física (aperte E)" -> { //sala aleatoria 5
+                                        if (FASE_STATE == 2) {
+                                            roomNumber = 5;
+                                            enterRoom();
+
+                                            player.currentRoom = "room1";
+                                            player.worldX = 7 * tileSz;
+                                            player.worldY = 16 * tileSz;
+                                        }
+                                    }
+                                    case "Sala (aperte E)" -> {
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                    }
+                                    case "Sair da sala (aperte E)" -> {
+                                            backFromRoom();
+                                    }
+                        
+                                    default -> {
+                                        pendingHideSequence = true;
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                    }
+                                }
+                            break;
                             }
                         }
                     }
@@ -780,13 +884,13 @@
                 if (FASE_STATE == 1) {
                     player.autoWalk = false;
                     player.isMoving = false;
-                    player.andar(true);
+                    player.andar(false);
                 } else if (FASE_STATE == 2) {
                     player.autoWalkDirection = "left";
-                    player.autoWalk = true;
+                    player.autoWalk = false;
                     player.andar(false);
                 } else if (FASE_STATE == 3) {
-                    player.andar(true);
+                    player.andar(false);
                 }
 
                 if (key.enterPressed) {

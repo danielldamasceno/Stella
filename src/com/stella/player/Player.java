@@ -25,7 +25,10 @@ public class Player extends Entity {
     // Posição do jogador na tela (fixa, câmera segue ele)
     public int screenX;
     public int screenY;
-    
+
+    public int lastWorldX, lastWorldY;
+    public String currentRoom;
+
     // Imagens do jogador para cada direção (2 frames cada)
     BufferedImage back1, back2, front1, front2, left1, left2, right1, right2;
     // Imagens idle (parado) para cada direção

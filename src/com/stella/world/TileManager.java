@@ -31,7 +31,7 @@ public class TileManager {
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
         
         getTileImage();
-        LoadMap();
+        LoadMap(gp.mapFile);
     }
 
     /**
@@ -128,15 +128,10 @@ public class TileManager {
      * Carrega o mapa do arquivo /res/map.txt.
      * Cada linha tem números separados por espaço, cada número é um índice de tile.
      */
-    public void LoadMap() {
-        switch (gp.FASE_STATE) {
-            case 1 -> map = "fase1/maptile.txt";
-            case 2 -> map = "fase2/mapSchool.txt";
-            //case 3 -> map = "fase2/mapSchool2.txt";
-            default -> map = "fase1/maptile.txt";
-        }
+    public void LoadMap(String mapFile) {
+        
         getTileImage();
-        String mapPath = "/res/levels/" + map;
+        String mapPath = "/res/levels/" + mapFile;
         try (InputStream is = openMapStream(mapPath)) {
             if (is == null) {
                 System.err.println("Arquivo de mapa não encontrado: " + mapPath);
