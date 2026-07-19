@@ -66,6 +66,7 @@ public class Fear {
         }
         if (situation > 1) situation = 1;
         if (situation < 0) situation = 0;
+        if (Double.isNaN(distIn)) distIn = 0;
 
     }
 

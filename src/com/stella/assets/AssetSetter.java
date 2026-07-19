@@ -4,12 +4,12 @@ import com.stella.core.GamePanel;
 import com.stella.entities.Ally;
 import com.stella.entities.Enemy;
 import com.stella.entities.InteractionBlock;
-import com.stella.entities.StepDialogueObject;
 import com.stella.entities.superObject;
 import com.stella.util.RandomUtils;
 
 public class AssetSetter {
     GamePanel gp;
+    int enemyIndex = 1;
 
     public AssetSetter(GamePanel gp) {
         this.gp = gp;
@@ -19,7 +19,7 @@ public class AssetSetter {
      * Procura o tile do tipo targetTile mais próximo da posição (col,row).
      * Retorna int[]{col,row} ou null se não encontrar dentro do raio.
      */
-    private int[] findNearestTileOfType(int col, int row, int targetTile, int maxRadius) {
+    /*private int[] findNearestTileOfType(int col, int row, int targetTile, int maxRadius) {
         for (int r = 1; r <= maxRadius; r++) {
             for (int dx = -r; dx <= r; dx++) {
                 for (int dy = -r; dy <= r; dy++) {
@@ -34,7 +34,7 @@ public class AssetSetter {
             }
         }
         return null;
-    }
+    } */
 
     public void setObject(int FASE_STATE, String mapFile) {
         String spawnFile = null;
@@ -62,7 +62,8 @@ public class AssetSetter {
                 } catch (Exception ignored) {}
             }
         }
-        scanMapForSpawns(FASE_STATE);
+        if (FASE_STATE != 1) scanMapForEnemySpawns(FASE_STATE);
+        scanMapForObjSpawns(FASE_STATE);
 
     }
 
@@ -89,14 +90,59 @@ public class AssetSetter {
         }
     }
 
-    public void scanMapForSpawns(int faseState) {
-        int enemyIndex = 1; 
+    public void scanMapForEnemySpawns(int faseState) {
+        enemyIndex = 1;
 
         for (int col = 0; col < gp.maxWorldCol; col++) {
             for (int row = 0; row < gp.maxWorldRow; row++) {
                 int code = gp.spawnM.getSpawnCode(col, row);
                 if (code == 0) continue;
 
+                switch (code) {
+                    case 16 -> { // aliado
+                        Ally a = new Ally();
+                        placeAt(a, col, row, 2, 3);
+                        gp.obj[0] = a;
+                        
+                    }
+                    case 17 -> { // inimigo dinamico
+                        if (enemyIndex < gp.obj.length) {
+                            if(RandomUtils.randInt(1, 4) != 1) {
+                                Enemy e = new Enemy(gp);
+                                placeAt(e, col, row, 3, 3);
+                                e.enemyType = "static";
+                                gp.obj[enemyIndex++] = e;
+                            }
+                        }      
+                    }
+                    case 18 -> { // inimigo fixo
+                        if (enemyIndex < gp.obj.length) {
+                            if (RandomUtils.randInt(1, 2) == 1){
+                                Enemy e = new Enemy(gp);
+                                placeAt(e, col, row, 3, 3);
+                                e.enemyType = "static";
+                                gp.obj[enemyIndex++] = e;
+                            } else {
+                                Enemy e = new Enemy(gp);
+                                placeAt(e, col, row, 3, 3);
+                                e.enemyType = "persuer";
+                                gp.obj[enemyIndex++] = e;
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+    }
+
+    public void scanMapForObjSpawns(int faseState) {
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                int code = gp.spawnM.getSpawnCode(col, row);
+                if (code == 0) continue;
+            
                 switch (code) {
                     case 1 -> { // porta/interação da fase 1
                         if(faseState == 1) {
@@ -106,7 +152,7 @@ public class AssetSetter {
                                 block.dialogueOptions = getDoorDialogueOptions();
                                 gp.obj[enemyIndex++] = block;
                             }
-                        }
+                        };
                     }
 
                     case 2 -> { // porta/interação da fase 2
@@ -120,43 +166,6 @@ public class AssetSetter {
                         }
                     }
 
-                    case 16 -> { // aliado
-                        if (faseState == 2) {
-                            Ally a = new Ally();
-                            placeAt(a, col, row, 2, 3);
-                            gp.obj[0] = a;
-                        }
-                    }
-                    case 17 -> { // inimigo dinamico
-                        if (faseState == 2) {
-                            if (enemyIndex < gp.obj.length) {
-                                if(RandomUtils.randInt(1, 4) != 1) {
-                                    Enemy e = new Enemy(gp);
-                                    placeAt(e, col, row, 3, 3);
-                                    e.enemyType = "static";
-                                    gp.obj[enemyIndex++] = e;
-                                }
-                            
-                            }
-                        }
-                    }
-                    case 18 -> { // inimigo fixo
-                        if (faseState == 2) {
-                            if (enemyIndex < gp.obj.length) {
-                                if (RandomUtils.randInt(1, 2) == 1){
-                                    Enemy e = new Enemy(gp);
-                                    placeAt(e, col, row, 3, 3);
-                                    e.enemyType = "static";
-                                    gp.obj[enemyIndex++] = e;
-                                } else {
-                                    Enemy e = new Enemy(gp);
-                                    placeAt(e, col, row, 3, 3);
-                                    e.enemyType = "persuer";
-                                    gp.obj[enemyIndex++] = e;
-                                }
-                            }
-                        }
-                    }
                     case 19 -> { // safezone
                         if (faseState == 1) {
                         InteractionBlock block = new InteractionBlock(gp);
@@ -230,7 +239,13 @@ public class AssetSetter {
                 }
             }
         }
+    }
 
+    private void spawnObjIntereactionBlock(int col, int row, String promptText, String[] dialogueLines) {
+        InteractionBlock block = new InteractionBlock(gp);
+        placeAt(block, col, row, 1, 1);
+        block.promptText = promptText;
+        if(dialogueLines != null) block.dialogueLines = dialogueLines;
     }
 
     private String[][] getDoorDialogueOptions() {

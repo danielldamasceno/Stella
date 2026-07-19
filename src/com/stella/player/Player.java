@@ -237,6 +237,7 @@ public class Player extends Entity {
                 //winCondition = 1;
                 return true;
             }
+            // debug if (currentRoom != null) Fear.situation = 0; // Zona segura, medo zerado
         }
         return false;
     }

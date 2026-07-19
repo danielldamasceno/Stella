@@ -86,7 +86,6 @@
         private BufferedImage cutsceneCharacterBackground;
         private String[] cutsceneLines = new String[0];
         private String[] cutsceneSpeakers = new String[0];
-        private int cutsceneIndex = 0;
         private boolean phase1IntroActive = false;
         private boolean pendingHideSequence = false;
         private boolean hideSequenceActive = false;
@@ -131,7 +130,7 @@
         public static int dificulty = 0;
 
         // Array de objetos do mundo (inimigos, itens, etc)
-        public superObject obj[] = new superObject[50]; //Limite de objetos
+        public superObject obj[] = new superObject[100]; //Limite de objetos
 
         // Posição da câmera (coordenada do mundo que aparece no canto superior-esquerdo)
         public int cameraX = 0;
@@ -446,7 +445,6 @@
                 };
                 cutsceneSpeakers = new String[0];
                 cutsceneBackground = cutsceneIntroBackground;
-                cutsceneIndex = 0;
                 gameState = CUTSCENE_1_STATE;
                 currentDialogIndex = 0;
                 setDialog(cutsceneLines);
@@ -482,7 +480,6 @@
                     "psicologa"
                 };
                 cutsceneBackground = cutsceneIntroBackground;
-                cutsceneIndex = 0;
                 phase1IntroActive = false;
                 FASE_STATE = 1;
                 setupGame();
@@ -513,7 +510,6 @@
                 };
                 cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa", "Personagem principal"};
                 cutsceneBackground = cutscenePsychologistBackground;
-                cutsceneIndex = 0;
                 currentDialogIndex = 0;
                 setDialog(cutsceneLines);
                 fromSafezonePsychDialog = true;
@@ -701,7 +697,9 @@
                                     block.promptText.contains("Sala de Matemática") ||
                                     block.promptText.contains("Sala de Português") ||
                                     block.promptText.contains("Laboratório de Informática") ||
-                                    block.promptText.contains("Laboratório de Física")
+                                    block.promptText.contains("Laboratório de Física") ||
+                                    block.promptText.contains("Sair da sala") ||
+                                    block.promptText.contains("Sala (aperte E)")
                                 );
 
                                 if (!isRoomPortal) {
@@ -769,7 +767,7 @@
                                         startDialogue(PLAY_STATE, block.getDialogueLines());
                                     }
                                     case "Sair da sala (aperte E)" -> {
-                                            backFromRoom();
+                                        backFromRoom();
                                     }
                         
                                     default -> {
