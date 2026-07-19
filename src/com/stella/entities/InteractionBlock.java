@@ -1,6 +1,10 @@
 package com.stella.entities;
 
 import com.stella.core.GamePanel;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+
 
 public class InteractionBlock extends superObject {
     public String promptText = "Ouvir (aperte E)";
@@ -13,6 +17,17 @@ public class InteractionBlock extends superObject {
         this.height = 8;
         this.collsion = false;
         this.image = null;
+    }
+    public InteractionBlock(GamePanel gp, String imagePath) {
+        this.width = 16;
+        this.height = 16;
+        this.collsion = false;
+        try {
+            this.image = ImageIO.read(getClass().getResourceAsStream(imagePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
     }
 
     public String[] getDialogueLines() {

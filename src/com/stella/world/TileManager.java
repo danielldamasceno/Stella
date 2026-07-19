@@ -93,6 +93,33 @@ public class TileManager {
         loadTile(16, "/res/tile/escolassprite/floor.png", false);
         loadTile(17, "/res/tile/escolassprite/floor.png", false);
     }
+    private void loadHouseTileSet(){
+        loadTile(0, "/res/tile/phs1/00.png", false);
+        loadTile(1, "/res/tile/phs1/border_1.png", true);
+        loadTile(2, "/res/tile/phs1/border_2.png", true);
+        loadTile(3, "/res/tile/phs1/border_3.png", true);
+        loadTile(4, "/res/tile/phs1/border_4.png", true);
+        loadTile(5, "/res/tile/phs1/chair_l.png", true);
+        loadTile(6, "/res/tile/phs1/chair_r.png", true);
+        loadTile(7, "/res/tile/phs1/corner_1.png", true);
+        loadTile(8, "/res/tile/phs1/corner_2.png", true);
+        loadTile(9, "/res/tile/phs1/corner_3.png", true);
+        loadTile(10, "/res/tile/phs1/corner_4.png", true);
+        loadTile(11, "/res/tile/phs1/floorlamp1.png", true);
+        loadTile(12, "/res/tile/phs1/floorlamp2.png", true);
+        loadTile(13, "/res/tile/phs1/floorlamp3.png", true);
+        loadTile(14, "/res/tile/phs1/h_floor.png", false);
+        loadTile(15, "/res/tile/phs1/h_wall1.png", true);
+        loadTile(16, "/res/tile/phs1/h_wall2.png", true);
+        loadTile(17, "/res/tile/phs1/l_wardrobe2.png", true);
+        loadTile(18, "/res/tile/phs1/L_wardrobe1.png", true);
+        loadTile(19, "/res/tile/phs1/L_wardrobe3.png", true);
+        loadTile(20, "/res/tile/phs1/R_wardrobe1.png", true);
+        loadTile(21, "/res/tile/phs1/R_wardrobe2.png", true);
+        loadTile(22, "/res/tile/phs1/r_wardrobe3.png", true);
+        loadTile(23, "/res/tile/phs1/table_l.png", true);
+        loadTile(24, "/res/tile/phs1/table_r.png", true);
+    }
 
     private void loadTile(int index, String path, boolean collision) {
         if (index < 0 || index >= tile.length) return;

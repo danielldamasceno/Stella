@@ -236,6 +236,17 @@ public class AssetSetter {
                             }
                         }
                     }
+                    case 27 ->{
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp, "/res/levelsimage/level2/estojo.png");
+                                placeAt(block, col, row, 1, 1);
+                                block.dialogueLines = new String[] {"Achei meu estojo"};
+                                block.promptText = "Estojo (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
                 }
             }
         }
