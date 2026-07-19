@@ -466,16 +466,16 @@
 
             private void startCutscene2() {
                 cutsceneLines = new String[] {
-                    "Psicóloga: \"Entendo. Pelo que você contou, isso pode indicar uma situação de violência física dentro de casa.\"",
-                    "Personagem: \"Eu ficava no meu quarto esperando a briga acabar.\"",
-                    "Psicóloga: \"Ninguém deveria passar por isso. Você não tem culpa pelo que aconteceu.\"",
-                    "Psicóloga: \"Em situações assim, o mais seguro é procurar um adulto de confiança, como um familiar, professor, orientador ou outro responsável que possa ajudar.\"",
-                    "Psicóloga: \"Também existem serviços de proteção para crianças e famílias quando há violência.\"",
-                    "Psicóloga: \"Agora, se você se sentir confortável, pode continuar contando a história. O que aconteceu depois?\""
+                    "Entendo. Pelo que você contou, isso pode indicar uma situação de violência física dentro de casa.",
+                    "Eu ficava no meu quarto esperando a briga acabar.",
+                    "Ninguém deveria passar por isso. Você não tem culpa pelo que aconteceu.",
+                    "Em situações assim, o mais seguro é procurar um adulto de confiança, como um familiar, professor, orientador ou outro responsável que possa ajudar.\"",
+                    "Também existem serviços de proteção para crianças e famílias quando há violência.",
+                    "Agora, se você se sentir confortável, pode continuar contando a história. O que aconteceu depois?"
                 };
                 cutsceneSpeakers = new String[] {
                     "psicologa",
-                    "personagem",
+                    "Stella",
                     "psicologa",
                     "psicologa",
                     "psicologa",
@@ -505,13 +505,13 @@
 
             private void startPsychologistConversation() {
                 cutsceneLines = new String[] {
-                    "Psicóloga: \"O que você viveu é uma situação de **violência contra a criança**. Pessoas que observam ou tentam se aproximar de crianças de forma suspeita representam um risco e nunca devem ser ignoradas.\"",
-                    "Psicóloga: \"Nesses momentos, o mais importante é não se aproximar, procurar um adulto de confiança e contar imediatamente o que aconteceu. Mesmo que você não tenha certeza, é sempre melhor pedir ajuda.\"",
-                    "Psicóloga: \"Você fez a escolha certa ao não entrar naquela sala.\"",
-                    "Psicóloga: \"Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?\"",
+                    "O que você viveu é uma situação de violência contra a criança. Pessoas que observam ou tentam se aproximar de crianças de forma suspeita representam um risco e nunca devem ser ignoradas.",
+                    "Nesses momentos, o mais importante é não se aproximar, procurar um adulto de confiança e contar imediatamente o que aconteceu. Mesmo que você não tenha certeza, é sempre melhor pedir ajuda.",
+                    "Você fez a escolha certa ao não entrar naquela sala.",
+                    "Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?",
                     "Foi na escola, os alunos me perseguiam por eu ser menina..."
                 };
-                cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa", "Personagem principal"};
+                cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa", "Stella"};
                 cutsceneBackground = cutscenePsychologistBackground;
                 cutsceneIndex = 0;
                 currentDialogIndex = 0;

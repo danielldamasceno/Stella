@@ -4,7 +4,6 @@ import com.stella.core.GamePanel;
 import com.stella.entities.Ally;
 import com.stella.entities.Enemy;
 import com.stella.entities.InteractionBlock;
-import com.stella.entities.StepDialogueObject;
 import com.stella.entities.superObject;
 import com.stella.util.RandomUtils;
 
@@ -223,6 +222,17 @@ public class AssetSetter {
                                 placeAt(block, col, row, 1, 1);
                                 block.dialogueLines = new String[] {"Essa porta está trancada!"};
                                 block.promptText = "Sala (aperte E)";
+                                gp.obj[enemyIndex++] = block;
+                            }
+                        }
+                    }
+                    case 27 ->{
+                        if (faseState == 2) {
+                            if (enemyIndex < gp.obj.length) {
+                                InteractionBlock block = new InteractionBlock(gp, "/res/levelsimage/level2/estojo.png");
+                                placeAt(block, col, row, 1, 1);
+                                block.dialogueLines = new String[] {"Achei meu estojo"};
+                                block.promptText = "Estojo (aperte E)";
                                 gp.obj[enemyIndex++] = block;
                             }
                         }
