@@ -175,12 +175,12 @@
                     startGame();
                 }
             });
-            optionsButton = createTexturedButton("Opções", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
+            /*optionsButton = createTexturedButton("Opções", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     showOptionButtons(true);
                 }
-            });
+            });*/
 
             //Botões de dificuldade 
             easyButton = createTexturedButton("Fácil", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
@@ -234,7 +234,7 @@
                 });
                 
                 this.add(startButton);
-                this.add(optionsButton);
+                //this.add(optionsButton);
                 this.add(easyButton);
                 this.add(normalButton);
                 this.add(hardButton);
@@ -252,7 +252,7 @@
 
             private void showOptionButtons(boolean visible) {
                 startButton.setVisible(!visible);
-                optionsButton.setVisible(!visible);
+                //optionsButton.setVisible(!visible);
                 easyButton.setVisible(visible);
                 normalButton.setVisible(visible);
                 hardButton.setVisible(visible);
@@ -443,7 +443,7 @@
                 // Aplica a dificuldade selecionada e inicia o jogo
                 Fear.setFearDificult(dificulty);
                 this.remove(startButton);
-                this.remove(optionsButton);
+                //this.remove(optionsButton);
                 this.revalidate();
                 this.repaint();
 
@@ -662,7 +662,7 @@
 
                 // Readiciona os botões do menu (foram removidos no startGame)
                 if (startButton.getParent() == null) this.add(startButton);
-                if (optionsButton.getParent() == null) this.add(optionsButton);
+                //if (optionsButton.getParent() == null) this.add(optionsButton);
                 showOptionButtons(false);
 
                 this.revalidate();
@@ -738,7 +738,9 @@
                                     block.promptText.contains("Laboratório de Informática") ||
                                     block.promptText.contains("Laboratório de Física") ||
                                     block.promptText.contains("Sair da sala (aperte E)") ||
-                                    block.promptText.contains("Sala (aperte E)")
+                                    block.promptText.contains("Sala (aperte E)") ||
+                                    block.promptText.contains("Sair da casa (aperte E)") ||
+                                    block.promptText.contains("Voltar para a sala (aperte E)")
                                 );
 
                                 if (!isRoomPortal) {
@@ -817,7 +819,7 @@
                                         if (!hasAllHomeItems()) {
                                             startDialogue(PLAY_STATE, "Estou esquecendo algo.");
                                         } else {
-                                            gameState = VICTORY_STATE;
+                                            triggerFase3Ending();
                                         }
                                     }
                                     case "Voltar para a sala (aperte E)" -> {
@@ -948,29 +950,7 @@
                     }
 
                     if (player.checkSafezone()) {
-                        homeCompleted = true;
-                        cutsceneLines = new String[] {
-                            "O que você viveu naquela noite foi uma situação de violência que colocou sua vida em risco. Ninguém deveria precisar fugir da própria casa ou se esconder para sobreviver.",
-                            "Em situações como essa, buscar ajuda de pessoas de confiança e das autoridades é fundamental. A violência nunca deve ser enfrentada sozinha, e pedir ajuda é um passo importante para recuperar a própria segurança.",
-                            "Obrigada por me ouvir... Reviver tudo isso foi muito difícil, mas hoje eu entendo que nada daquilo foi culpa minha. Eu só espero que ninguém mais precise passar pelo medo e pelo sofrimento que eu vivi."
-                        };
-
-                        cutsceneSpeakers = new String[] {
-                            "psicologa",
-                            "psicologa",
-                            "Stella"
-                        };
-
-                        cutsceneBackground = cutsceneFinalBackground;
-                        setDialog(cutsceneLines);
-                        currentDialogIndex = 0;
-                        fromSafezonePsychDialog = true;
-                        nextGameStateAfterDialog = homeCompleted ? FINAL_IMAGE_STATE : PLAY_STATE;
-                        key.interactPressed = false;
-                        key.enterPressed = false;
-                        player.autoWalk = false;
-                        player.isMoving = false;
-                        gameState = CUTSCENE_2_STATE;
+                        triggerFase3Ending();
                     }
                     for (int i = 0; i < obj.length; i++) {
                         if (obj[i] instanceof Enemy) {
@@ -1000,6 +980,26 @@
 
             public boolean isInvasorTriggered() {
                 return invasorTriggered;
+            }
+
+            private void triggerFase3Ending() {
+                homeCompleted = true;
+                cutsceneLines = new String[] {
+                    "O que você viveu naquela noite foi uma situação de violência que colocou sua vida em risco. Ninguém deveria precisar fugir da própria casa ou se esconder para sobreviver.",
+                    "Em situações como essa, buscar ajuda de pessoas de confiança e das autoridades é fundamental. A violência nunca deve ser enfrentada sozinha, e pedir ajuda é um passo importante para recuperar a própria segurança.",
+                    "Obrigada por me ouvir... Reviver tudo isso foi muito difícil, mas hoje eu entendo que nada daquilo foi culpa minha. Eu só espero que ninguém mais precise passar pelo medo e pelo sofrimento que eu vivi."
+                };
+                cutsceneSpeakers = new String[] { "psicologa", "psicologa", "Stella" };
+                cutsceneBackground = cutsceneFinalBackground;
+                setDialog(cutsceneLines);
+                currentDialogIndex = 0;
+                fromSafezonePsychDialog = true;
+                nextGameStateAfterDialog = FINAL_IMAGE_STATE;
+                key.interactPressed = false;
+                key.enterPressed = false;
+                player.autoWalk = false;
+                player.isMoving = false;
+                gameState = CUTSCENE_2_STATE;
             }
 
             private void dialogState() {
@@ -1534,25 +1534,29 @@
                     g2.setColor(Color.BLACK);
                     g2.fillRect(0, 0, screenWidth, screenHeight);
                 }
-
-                g2.setColor(new Color(0, 0, 0, 180));
-                int panelWidth = screenWidth - 120;
-                int panelHeight = 260;
-                int panelX = 60;
-                int panelY = screenHeight - panelHeight - 80;
-                g2.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 24, 24);
-
+            
+                g2.setColor(new Color(0, 0, 0, 120));
+                g2.fillRect(0, 0, screenWidth, screenHeight);
+            
+                int panelWidth = screenWidth - 200;
+                int panelX = (screenWidth - panelWidth) / 2;
+                int panelY = 90;
+                int panelHeight = screenHeight - panelY - 140;
+            
+                g2.setColor(new Color(0, 0, 0, 190));
+                g2.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 28, 28);
+            
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 40));
-                String title = "Créditos";
+                g2.setFont(new Font("Arial", Font.BOLD, 42));
+                String title = "Obrigada por jogar";
                 int titleWidth = g2.getFontMetrics().stringWidth(title);
-                g2.drawString(title, screenWidth/2 - titleWidth/2, panelY + 50);
-
-                g2.setFont(new Font("Arial", Font.PLAIN, 24));
-                String subtitle = "Desenvolvedores:";
+                g2.drawString(title, screenWidth / 2 - titleWidth / 2, panelY + 70);
+            
+                g2.setFont(new Font("Arial", Font.PLAIN, 22));
+                String subtitle = "Desenvolvido por:";
                 int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
-                g2.drawString(subtitle, screenWidth/2 - subtitleWidth/2, panelY + 90);
-
+                g2.drawString(subtitle, screenWidth / 2 - subtitleWidth / 2, panelY + 120);
+            
                 String[] developers = new String[] {
                     "Daniel Damasceno",
                     "João Pedro Santos",
@@ -1560,14 +1564,18 @@
                     "Mateus Fagundes",
                     "Victor Dias"
                 };
-
-                int devStartY = panelY + 130;
+            
+                g2.setFont(new Font("Arial", Font.PLAIN, 26));
+                int lineHeight = 40;
+                int devsBlockHeight = developers.length * lineHeight;
+                int availableSpace = panelHeight - 120;
+                int devStartY = panelY + 120 + Math.max(0, (availableSpace - devsBlockHeight) / 2) + lineHeight;
+            
                 for (int i = 0; i < developers.length; i++) {
                     String dev = developers[i];
                     int dw = g2.getFontMetrics().stringWidth(dev);
-                    g2.drawString(dev, screenWidth/2 - dw/2, devStartY + i * 32);
+                    g2.drawString(dev, screenWidth / 2 - dw / 2, devStartY + i * lineHeight);
                 }
-
                 restartButton.setVisible(true);
             }
 
