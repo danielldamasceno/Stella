@@ -25,7 +25,7 @@ public class TileManager {
         this.gp = gp;
         
         // Cria array para os tiles da fase 1
-        tile = new Tile[18];
+        tile = new Tile[39];
         
         // Cria o mapa com o tamanho do mundo
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
@@ -38,18 +38,21 @@ public class TileManager {
      * Carrega as imagens de todos os tiles de 0 a 15.
      * As imagens estão em /res/tile/tile000.png, tile001.png, etc.
      */
-    public void getTileImage(){
-        for (int i = 0; i < tile.length; i++) {
-            tile[i] = new Tile();
-        }
-
-        String normalizedMap = map == null ? "" : map.toLowerCase();
-        if (normalizedMap.contains("school") || normalizedMap.contains("hallway") || normalizedMap.contains("fase2") || normalizedMap.contains("fase2")) {
-            loadSchoolTileSet();
-        } else {
-            loadFfpTileSet();
-        }
+    public void getTileImage() {
+    for (int i = 0; i < tile.length; i++) {
+        tile[i] = new Tile();
     }
+
+    String normalizedMap = map == null ? "" : map.toLowerCase();
+    if (normalizedMap.contains("school") || normalizedMap.contains("hallway") || normalizedMap.contains("fase2")) {
+        loadSchoolTileSet();
+    } else if (normalizedMap.contains("fase3") || normalizedMap.contains("sala")
+            || normalizedMap.contains("quarto") || normalizedMap.contains("cozinha")) {
+        loadHouseTileSet();
+    } else {
+        loadFfpTileSet();
+    }
+}
 
     private void loadFfpTileSet() {
         loadTile(0, "/res/tile/FFP/00.png", false);
@@ -105,20 +108,35 @@ public class TileManager {
         loadTile(8, "/res/tile/phs1/corner_2.png", true);
         loadTile(9, "/res/tile/phs1/corner_3.png", true);
         loadTile(10, "/res/tile/phs1/corner_4.png", true);
-        loadTile(11, "/res/tile/phs1/floorlamp1.png", true);
+        loadTile(11, "/res/tile/phs1/floorlamp1.png", false);
         loadTile(12, "/res/tile/phs1/floorlamp2.png", true);
         loadTile(13, "/res/tile/phs1/floorlamp3.png", true);
         loadTile(14, "/res/tile/phs1/h_floor.png", false);
         loadTile(15, "/res/tile/phs1/h_wall1.png", true);
         loadTile(16, "/res/tile/phs1/h_wall2.png", true);
-        loadTile(17, "/res/tile/phs1/l_wardrobe2.png", true);
-        loadTile(18, "/res/tile/phs1/L_wardrobe1.png", true);
+        loadTile(17, "/res/tile/phs1/L_wardrobe2.png", true);
+        loadTile(18, "/res/tile/phs1/L_wardrobe1.png", false);
         loadTile(19, "/res/tile/phs1/L_wardrobe3.png", true);
-        loadTile(20, "/res/tile/phs1/R_wardrobe1.png", true);
+        loadTile(20, "/res/tile/phs1/R_wardrobe1.png", false);
         loadTile(21, "/res/tile/phs1/R_wardrobe2.png", true);
-        loadTile(22, "/res/tile/phs1/r_wardrobe3.png", true);
+        loadTile(22, "/res/tile/phs1/R_wardrobe3.png", true);
         loadTile(23, "/res/tile/phs1/table_l.png", true);
         loadTile(24, "/res/tile/phs1/table_r.png", true);
+        loadTile(25, "/res/tile/phs1/zl_tv1.png", true);
+        loadTile(26, "/res/tile/phs1/zl_tv2.png", true);
+        loadTile(27, "/res/tile/phs1/zr_tv1.png", true);
+        loadTile(28, "/res/tile/phs1/zr_tv2.png", true);
+        loadTile(29, "/res/tile/phs1/zthisofasucksahsprite_l1.png", true);
+        loadTile(30, "/res/tile/phs1/zthisofasucksahsprite_l2.png", true);
+        loadTile(31, "/res/tile/phs1/zthisofasucksahsprite_r1.png", true);
+        loadTile(32, "/res/tile/phs1/zthisofasucksahsprite_r2.png", true);
+        loadTile(33, "/res/tile/phs1/zwindow_l1.png", true);
+        loadTile(34, "/res/tile/phs1/zwindow_l2.png", true);
+        loadTile(35, "/res/tile/phs1/zwindow_r1.png", true);
+        loadTile(36, "/res/tile/phs1/zwindow_r2.png", true);
+        loadTile(37, "/res/tile/phs1/zzthisdoorsucksahsprite1.png", true);
+        loadTile(38, "/res/tile/phs1/zzthisdoorsucksahsprite2.png", true);
+    
     }
 
     private void loadTile(int index, String path, boolean collision) {

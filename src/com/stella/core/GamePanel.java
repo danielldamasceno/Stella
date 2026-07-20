@@ -62,6 +62,7 @@
         public static final int FADE_IN_STATE = 7;
         public static final int FADE_OUT_STATE = 8;
         public static final int LOADING_STATE = 9;
+        public static final int FINAL_IMAGE_STATE = 13;
 
         //Condições win/lose
         public static final int GAME_OVER_STATE = 2;  // Jogo acabou (derrota)
@@ -84,6 +85,7 @@
         private BufferedImage cutsceneIntroBackground;
         private BufferedImage cutscenePsychologistBackground;
         private BufferedImage cutsceneCharacterBackground;
+        private BufferedImage cutsceneFinalBackground;
         private String[] cutsceneLines = new String[0];
         private String[] cutsceneSpeakers = new String[0];
         private boolean phase1IntroActive = false;
@@ -100,6 +102,12 @@
         private static final int LOADING_MIN_DURATION = 750; // ms, dentro do range 0.5-1s que você pediu
         private boolean levelLoaded = false;
         private static final int FADE_DURATION = 600; // 1 segundo em ms
+        private long phase3StartTime = -1;
+        private boolean invasorTriggered = false;
+        private static final long INVASOR_TRIGGER_DELAY_MS = 5000; // 30s
+        private Enemy invasorEnemy = null;
+        private boolean pendingInvasorReturn = false;
+        private boolean invasorAlreadyCame = false;
 
         public int gameState = TITLE_STATE;
 
@@ -154,6 +162,7 @@
                 cutsceneIntroBackground = loadImage("/res/levelsimage/cutscene/quartoinit.png");
                 cutscenePsychologistBackground = loadImage("/res/levelsimage/psicologa/psifala.png");
                 cutsceneCharacterBackground = loadImage("/res/levelsimage/psicologa/mcfala.png");
+                cutsceneFinalBackground = loadImage("/res/levelsimage/psicologa/imagemFinal.png");
                 cutsceneBackground = cutsceneIntroBackground;
             } catch (Exception e) {
                 System.out.println("Erro ao carregar background ou textura de botões: " + e.getMessage());
@@ -331,6 +340,10 @@
                 switch (FASE_STATE) {
                     case 1 -> mapFile = "fase1/maptile.txt";
                     case 2 -> mapFile = "fase2/mapSchool.txt";
+                    case 3 -> {
+                        player.currentRoom = "mapSala";
+                        mapFile = "fase3/mapSala.txt";
+                    }
                     default -> mapFile = "fase1/maptile.txt";
                 }
                 tileManager.LoadMap(mapFile);
@@ -341,6 +354,11 @@
                                     startDialogue(PLAY_STATE, "os meninos faziam bullying comigo, tive que tentar encontrar a professora para conversar com ela");
                                     // não retorna aqui: mantém a inicialização da fase e apenas inicia o diálogo
                                 }
+                                if (FASE_STATE == 3) {
+                                    phase3StartTime = System.currentTimeMillis();
+                                    invasorTriggered = false;
+                                    invasorEnemy = null;
+                                }                               
                 som.tocarTrilha("leticia-trilha-ambiente-2026-07-13-06_54.wav");
 
             }
@@ -391,6 +409,7 @@
             }
 
             private boolean isTableTile(int tileCode) {
+                if (FASE_STATE == 3) return tileCode == 23 || tileCode == 24;
                 return tileCode == 10 || tileCode == 11;
             }
 
@@ -507,7 +526,7 @@
                     "Nesses momentos, o mais importante é não se aproximar, procurar um adulto de confiança e contar imediatamente o que aconteceu. Mesmo que você não tenha certeza, é sempre melhor pedir ajuda.",
                     "Você fez a escolha certa ao não entrar naquela sala.",
                     "Isso aconteceu outras vezes? Você consegue se lembrar de outra situação que tenha feito você se sentir em perigo?",
-                    "Foi na escola, os alunos me perseguiam por eu ser menina..."
+                    "Foi na escola, os alunos me perseguiam por eu ser menina... tive que ir atras do meu estojo que eles econderam."
                 };
                 cutsceneSpeakers = new String[] {"psicologa", "psicologa", "psicologa", "psicologa", "Stella"};
                 cutsceneBackground = cutscenePsychologistBackground;
@@ -576,6 +595,24 @@
                 aSetter.setObject(FASE_STATE, null);
                 mapFile = null;
 
+                updateCam();
+            }
+
+            private void changeHomeRoom(String targetRoom, int spawnCol, int spawnRow) {
+                player.currentRoom = targetRoom;
+                mapFile = switch (targetRoom) {
+                    case "mapSala" -> "fase3/mapSala.txt";
+                    case "mapQuarto" -> "fase3/mapQuarto.txt";
+                    case "mapCozinha" -> "fase3/mapCozinha.txt";
+                    default -> "fase3/mapSala.txt";
+                };
+            
+                tileManager.LoadMap(mapFile);
+                aSetter.setObject(FASE_STATE, null);
+            
+                player.worldX = spawnCol * tileSz;
+                player.worldY = spawnRow * tileSz;
+            
                 updateCam();
             }
 
@@ -700,7 +737,7 @@
                                     block.promptText.contains("Sala de Português") ||
                                     block.promptText.contains("Laboratório de Informática") ||
                                     block.promptText.contains("Laboratório de Física") ||
-                                    block.promptText.contains("Sair da sala") ||
+                                    block.promptText.contains("Sair da sala (aperte E)") ||
                                     block.promptText.contains("Sala (aperte E)")
                                 );
 
@@ -775,6 +812,45 @@
                                     case "Sair da sala (aperte E)" -> {
                                         backFromRoom();
                                     }
+                                    //fase 3:
+                                    case "Sair da casa (aperte E)" -> {
+                                        if (!hasAllHomeItems()) {
+                                            startDialogue(PLAY_STATE, "Estou esquecendo algo.");
+                                        } else {
+                                            gameState = VICTORY_STATE;
+                                        }
+                                    }
+                                    case "Voltar para a sala (aperte E)" -> {
+                                        changeHomeRoom("mapSala", 14, 4);
+                                    }
+                                    case "Entrar no quarto (aperte E)" -> {
+                                        player.lastWorldX = player.worldX;
+                                        player.lastWorldY= player.worldY;
+                                        changeHomeRoom("mapQuarto", 5, 8);
+                                    }
+                                    case "Entrar na cozinha (aperte E)" -> {
+                                        player.lastWorldX = player.worldX;
+                                        player.lastWorldY= player.worldY;
+                                        changeHomeRoom("mapCozinha",16, 11);
+                                    }
+                                    case "Pegar a carteira (aperte E)" -> {
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                        obj[i] = null;
+                                        player.inventario[0] = "wallet";
+                                        checkLastItem();
+                                    }
+                                    case "Pegar as chaves (aperte E)" -> {
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                        obj[i] = null;
+                                        player.inventario[2] = "key";
+                                        checkLastItem();
+                                    }
+                                    case "Pegar o celular (aperte E)" -> {
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                        obj[i] = null;
+                                        player.inventario[1] = "phone";
+                                        checkLastItem();
+                                    }
                         
                                     default -> {
                                         pendingHideSequence = true;
@@ -822,6 +898,7 @@
                     if (player.checkSafezone()) {
                         // Ao encostar na professora: mostrar a cena da psicóloga com uma linha curta
                         schoolCompleted = true;
+                        player.inventario[0] = null; //remove o estojo
                         cutsceneLines = new String[] { 
                             "Ainda bem que você conseguiu escapar!",
                             "O que você viveu na escola também foi uma forma de violência. O bullying acontece quando uma pessoa é humilhada, excluída, ameaçada ou perseguida repetidamente, e isso nunca é culpa da vítima.",
@@ -833,6 +910,7 @@
                         };
 
                         cutsceneSpeakers = new String[] {
+                            "psicologa",
                             "psicologa",
                             "psicologa",
                             "psicologa",
@@ -861,9 +939,38 @@
                 }
 
                 if (FASE_STATE == 3) {
+                    if (!invasorTriggered && phase3StartTime > 0
+                        && System.currentTimeMillis() - phase3StartTime >= INVASOR_TRIGGER_DELAY_MS) {
+                        invasorTriggered = true;
+                        invasorEnemy = aSetter.spawnInvasor();
+                        pendingHideSequence = true;
+                        startDialogue(PLAY_STATE, "Alguém entrou em casa... rápido, se esconda!");
+                    }
+
                     if (player.checkSafezone()) {
-                        gameState = DIALOG_STATE;
+                        homeCompleted = true;
+                        cutsceneLines = new String[] {
+                            "O que você viveu naquela noite foi uma situação de violência que colocou sua vida em risco. Ninguém deveria precisar fugir da própria casa ou se esconder para sobreviver.",
+                            "Em situações como essa, buscar ajuda de pessoas de confiança e das autoridades é fundamental. A violência nunca deve ser enfrentada sozinha, e pedir ajuda é um passo importante para recuperar a própria segurança.",
+                            "Obrigada por me ouvir... Reviver tudo isso foi muito difícil, mas hoje eu entendo que nada daquilo foi culpa minha. Eu só espero que ninguém mais precise passar pelo medo e pelo sofrimento que eu vivi."
+                        };
+
+                        cutsceneSpeakers = new String[] {
+                            "psicologa",
+                            "psicologa",
+                            "Stella"
+                        };
+
+                        cutsceneBackground = cutsceneFinalBackground;
+                        setDialog(cutsceneLines);
                         currentDialogIndex = 0;
+                        fromSafezonePsychDialog = true;
+                        nextGameStateAfterDialog = homeCompleted ? FINAL_IMAGE_STATE : PLAY_STATE;
+                        key.interactPressed = false;
+                        key.enterPressed = false;
+                        player.autoWalk = false;
+                        player.isMoving = false;
+                        gameState = CUTSCENE_2_STATE;
                     }
                     for (int i = 0; i < obj.length; i++) {
                         if (obj[i] instanceof Enemy) {
@@ -889,6 +996,10 @@
             }
             private boolean shouldTriggerGameOver() {
                 return Fear.situation >= 1.0 && gameState != FADE_STATE && gameState != GAME_OVER_STATE && gameState != VICTORY_STATE;
+            }
+
+            public boolean isInvasorTriggered() {
+                return invasorTriggered;
             }
 
             private void dialogState() {
@@ -919,6 +1030,12 @@
                     currentDialogIndex++;
                     if (currentDialogIndex >= dialogueLength) {
                         currentDialogIndex = 0;
+                        if (pendingInvasorReturn) {
+                            pendingInvasorReturn = false;
+                            pendingHideSequence = true;
+                            startDialogue(PLAY_STATE, "Peguei tudo... mas ele voltou! Rápido, se esconda!");
+                            return;
+                        }
                         if (pendingHideSequence) {
                             pendingHideSequence = false;
                             startHideSequence();
@@ -928,10 +1045,8 @@
                             gameState = CUTSCENE_2_STATE;
                         } else if (FASE_STATE == 1) {
                             gameState = PLAY_STATE;
-                        } else if (FASE_STATE == 2) {
+                        } else if (FASE_STATE == 2 || FASE_STATE == 3) {
                             gameState = nextGameStateAfterDialog;
-                        } else if (FASE_STATE == 3) {
-                            gameState = VICTORY_STATE;
                         } else {
                             gameState = nextGameStateAfterDialog;
                         }
@@ -969,9 +1084,17 @@
                             return;
                         }
 
+                        if (nextGameStateAfterDialog == FINAL_IMAGE_STATE) {
+                            nextGameStateAfterDialog = PLAY_STATE;
+                            restartButton.setVisible(true);
+                            nextFaseButton.setVisible(false);
+                            gameState = FINAL_IMAGE_STATE;
+                            return;
+                        }
+
                         if (fromSafezonePsychDialog) {
                             fromSafezonePsychDialog = false;
-                            FASE_STATE = 2;
+                            FASE_STATE++;
                             setupGame();
                             player.autoWalk = false;
                             player.isMoving = false;
@@ -993,7 +1116,7 @@
                 cutsceneLines = new String[] {
                     "O primeiro caso foi em uma pizzaria que fui para um aniversário, eu precisava achar a sala do aniversariante, então resolvi explorar"
                 };
-                cutsceneSpeakers = new String[] { "personagem" };
+                cutsceneSpeakers = new String[] { "Stella" };
                 cutsceneBackground = cutsceneCharacterBackground;
                 phase1IntroActive = true;
                 currentDialogIndex = 0;
@@ -1036,11 +1159,35 @@
                         playerHidden = true;
                         hideSequenceActive = false;
                         Fear.situation = 0;
-                        gameState = PLAY_STATE;
                         player.autoWalk = false;
                         player.isMoving = false;
+
+                        if (invasorEnemy != null) {
+                            for (int i = 0; i < obj.length; i++) {
+                                if (obj[i] == invasorEnemy) { obj[i] = null; break; }
+                            }
+                            invasorEnemy = null;
+                        }
+
+                        if (FASE_STATE == 3 && invasorAlreadyCame == false){
+                            invasorAlreadyCame = true;
+                            startDialogue(PLAY_STATE, "Preciso sair daqui! Tenho que pegar as minhas chaves, meu celular e minha carteira");
+                        }
+                        return;
                     }
                 }
+            }
+
+            private void checkLastItem() {
+                if (hasAllHomeItems()) {
+                    pendingInvasorReturn = true;
+                }
+            }
+
+            private boolean hasAllHomeItems() {
+                return "wallet".equals(player.inventario[0]) &&
+                       "phone".equals(player.inventario[1]) &&
+                       "key".equals(player.inventario[2]);
             }
 
             private void fadeState() {
@@ -1154,7 +1301,7 @@
                 // Nome do falante
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("Arial", Font.BOLD, 16));
-                g2.drawString("Personagem principal:", 70, screenHeight - 128);
+                g2.drawString("Stella:", 70, screenHeight - 128);
 
                 // Texto de diálogo
                 g2.setColor(Color.WHITE);
@@ -1219,13 +1366,13 @@
 
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("Arial", Font.BOLD, 16));
-                String speakerLabel = "Personagem principal";
+                String speakerLabel = "Stella";
                 if (currentDialogIndex < cutsceneSpeakers.length) {
                     String speaker = cutsceneSpeakers[currentDialogIndex];
                     if ("psicologa".equalsIgnoreCase(speaker)) {
                         speakerLabel = "Psicóloga";
                     } else if ("personagem".equalsIgnoreCase(speaker)) {
-                        speakerLabel = "Personagem";
+                        speakerLabel = "Stella";
                     }
                 }
                 g2.drawString(speakerLabel + ":", 70, screenHeight - 128);
@@ -1380,6 +1527,50 @@
                     restartButton.setVisible(true);
             }
 
+            private void drawFinalImage(Graphics2D g2) {
+                if (cutsceneFinalBackground != null) {
+                    g2.drawImage(cutsceneFinalBackground, 0, 0, screenWidth, screenHeight, this);
+                } else {
+                    g2.setColor(Color.BLACK);
+                    g2.fillRect(0, 0, screenWidth, screenHeight);
+                }
+
+                g2.setColor(new Color(0, 0, 0, 180));
+                int panelWidth = screenWidth - 120;
+                int panelHeight = 260;
+                int panelX = 60;
+                int panelY = screenHeight - panelHeight - 80;
+                g2.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 24, 24);
+
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 40));
+                String title = "Créditos";
+                int titleWidth = g2.getFontMetrics().stringWidth(title);
+                g2.drawString(title, screenWidth/2 - titleWidth/2, panelY + 50);
+
+                g2.setFont(new Font("Arial", Font.PLAIN, 24));
+                String subtitle = "Desenvolvedores:";
+                int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
+                g2.drawString(subtitle, screenWidth/2 - subtitleWidth/2, panelY + 90);
+
+                String[] developers = new String[] {
+                    "Daniel Damasceno",
+                    "João Pedro Santos",
+                    "Leticia Pires",
+                    "Mateus Fagundes",
+                    "Victor Dias"
+                };
+
+                int devStartY = panelY + 130;
+                for (int i = 0; i < developers.length; i++) {
+                    String dev = developers[i];
+                    int dw = g2.getFontMetrics().stringWidth(dev);
+                    g2.drawString(dev, screenWidth/2 - dw/2, devStartY + i * 32);
+                }
+
+                restartButton.setVisible(true);
+            }
+
             /**
              * Atualiza a lógica do jogo a cada frame.
              */
@@ -1419,6 +1610,7 @@
                     case TRANS_STATE:     drawTrans(g2);        break;
                     case GAME_OVER_STATE: drawGameOver(g2);     break;
                     case VICTORY_STATE:   drawVictory(g2);      break;
+                    case FINAL_IMAGE_STATE: drawFinalImage(g2);  break;
                 }
             }
             
