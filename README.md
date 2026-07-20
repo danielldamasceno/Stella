@@ -64,6 +64,8 @@ Se estiver usando VS Code com extensão Java:
 
 ### Opção 3: Executavel (Recomendado)
 
+https://drive.google.com/drive/folders/1J4NR9w5Qgg_YlvCp-rck_rvJ__7f9DeL?usp=drive_link
+
 Simplesmente de dois cliques no app "Stella.exe"
 ---
 
