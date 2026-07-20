@@ -43,6 +43,8 @@ public class Player extends Entity {
     
     // Texto de status atual (ex: "Barra de medo: 50%")
     private String situation;
+    public String[] inventario = new String[3];
+    
     //private int winCondition = 0;
     /*  !!DEBUG!!
     // private String inDist; //Distância do inimigo mais próximo
@@ -203,7 +205,7 @@ public class Player extends Entity {
 
         // Atualiza a situação com base na menor distância encontrada
         if (minDist == Double.MAX_VALUE) {
-            situation = null; // nenhum inimigo presente
+            Fear.situation = 0; // nenhum inimigo presente
             return;
         }
         Fear.distanceFear(minDist); // Atualiza o medo com base na distância

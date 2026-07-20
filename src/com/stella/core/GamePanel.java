@@ -92,6 +92,7 @@
         private boolean playerHidden = false;
         private boolean fromSafezonePsychDialog = false;
         private boolean schoolCompleted = false;
+        private boolean homeCompleted = false;
         private long hideSequenceStartedAt = -1;
         private static final int HIDE_SEQUENCE_DURATION_MS = 5000;
         private int hideCountdownSeconds = 5;
@@ -514,7 +515,7 @@
                 setDialog(cutsceneLines);
                 fromSafezonePsychDialog = true;
                 // Só vai para a vitória se já tiver concluído a fase da escola
-                if (schoolCompleted) {
+                if (homeCompleted) {
                     nextGameStateAfterDialog = VICTORY_STATE;
                 } else {
                     nextGameStateAfterDialog = PLAY_STATE;
@@ -534,9 +535,9 @@
                 nextFaseButton.setVisible(false);
                 stopGameThread();
                 // Se estamos saindo da fase 2, marcamos a escola como concluída
-                if (FASE_STATE == 2) {
-                    schoolCompleted = true;
-                }
+                if (FASE_STATE == 2) schoolCompleted = true;
+                if (FASE_STATE == 3) homeCompleted = true;
+                
                 FASE_STATE++;
                 setupGame();
                 player.autoWalk = false;
@@ -560,6 +561,7 @@
                 mapFile = "fase2/randomRoom" + roomNumber + ".txt";
 
                 tileManager.LoadMap(mapFile);
+                if (roomNumber == 2) mapFile = "spawnrandomRoom" + roomNumber + ".txt";
                 aSetter.setObject(FASE_STATE, mapFile);
 
                 updateCam();
@@ -706,7 +708,6 @@
                                     block.used = true;
                                 }
 
-                                // Se for a safezone (com prompt que contenha "Acessar sala"), abre diálogo com a psicóloga
                                 switch(block.promptText) {
                                     case "Acessar sala (aperte E)" -> {
                                         if (FASE_STATE == 1) {
@@ -728,7 +729,7 @@
                                             roomNumber = 2;
                                             enterRoom();
 
-                                            player.currentRoom = "room1";
+                                            player.currentRoom = "room2";
                                             player.worldX = 17 * tileSz;
                                             player.worldY = 16 * tileSz;
                                         }
@@ -738,7 +739,7 @@
                                             roomNumber = 3;
                                             enterRoom();
 
-                                            player.currentRoom = "room1";
+                                            player.currentRoom = "room3";
                                             player.worldX = 17 * tileSz;
                                             player.worldY = 16 * tileSz;
                                         }
@@ -748,7 +749,7 @@
                                             roomNumber = 4;
                                             enterRoom();
 
-                                            player.currentRoom = "room1";
+                                            player.currentRoom = "room4";
                                             player.worldX = 8 * tileSz;
                                             player.worldY = 16 * tileSz;
                                         }
@@ -758,10 +759,15 @@
                                             roomNumber = 5;
                                             enterRoom();
 
-                                            player.currentRoom = "room1";
+                                            player.currentRoom = "room5";
                                             player.worldX = 7 * tileSz;
                                             player.worldY = 16 * tileSz;
                                         }
+                                    }
+                                    case "Pegar o Estojo (aperte E)" -> {
+                                        startDialogue(PLAY_STATE, block.getDialogueLines());
+                                        obj[i] = null; // Remove o item do jogo
+                                        player.inventario[0] = "estojo";
                                     }
                                     case "Sala (aperte E)" -> {
                                         startDialogue(PLAY_STATE, block.getDialogueLines());
@@ -816,14 +822,31 @@
                     if (player.checkSafezone()) {
                         // Ao encostar na professora: mostrar a cena da psicóloga com uma linha curta
                         schoolCompleted = true;
-                        cutsceneLines = new String[] { "Ainda bem que você conseguiu escapar!" };
-                        cutsceneSpeakers = new String[] { "psicologa" };
+                        cutsceneLines = new String[] { 
+                            "Ainda bem que você conseguiu escapar!",
+                            "O que você viveu na escola também foi uma forma de violência. O bullying acontece quando uma pessoa é humilhada, excluída, ameaçada ou perseguida repetidamente, e isso nunca é culpa da vítima.",
+                            "Esconder seus pertences, fazer brincadeiras para constranger você ou tratá-la de forma diferente por ser menina são atitudes que machucam e podem causar sofrimento por muito tempo.",
+                            "Nessas situações, procurar um adulto de confiança, como um professor, coordenador ou um familiar, é a atitude mais segura. Pedir ajuda não é sinal de fraqueza, e sim uma forma de se proteger.",
+                            "Você fez a escolha certa ao procurar sua professora. Ninguém deveria enfrentar esse tipo de situação sozinho.",
+                            "Você consegue se lembrar de outra situação em que tenha sentido medo ou precisado lutar para se proteger?",
+                            "Sim... Na minha antiga casa, ela foi invadida durante a noite. Eu precisei pegar meu celular, minha carteira e a chave para fugir dali... mas, antes de conseguir escapar, tive que me esconder do invasor."
+                        };
+
+                        cutsceneSpeakers = new String[] {
+                            "psicologa",
+                            "psicologa",
+                            "psicologa",
+                            "psicologa",
+                            "psicologa",
+                            "Stella"
+                        };
+
                         cutsceneBackground = cutscenePsychologistBackground;
                         setDialog(cutsceneLines);
                         currentDialogIndex = 0;
                         fromSafezonePsychDialog = true;
-                        // Se já concluiu a escola, segue para vitória; caso contrário volta ao jogo
-                        nextGameStateAfterDialog = schoolCompleted ? VICTORY_STATE : PLAY_STATE;
+                        // Se já concluiu a fase da casa, segue para vitória; caso contrário volta ao jogo
+                        nextGameStateAfterDialog = homeCompleted ? VICTORY_STATE : PLAY_STATE;
                         key.interactPressed = false;
                         key.enterPressed = false;
                         player.autoWalk = false;

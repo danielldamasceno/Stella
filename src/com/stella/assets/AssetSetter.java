@@ -4,13 +4,16 @@ import com.stella.core.GamePanel;
 import com.stella.entities.Ally;
 import com.stella.entities.Enemy;
 import com.stella.entities.InteractionBlock;
+import com.stella.entities.*;
 import com.stella.entities.superObject;
 import com.stella.util.RandomUtils;
+import com.stella.player.Player;
 
 public class AssetSetter {
     GamePanel gp;
     int enemyIndex = 1;
-
+    int item;
+    
     public AssetSetter(GamePanel gp) {
         this.gp = gp;
     }
@@ -100,10 +103,11 @@ public class AssetSetter {
 
                 switch (code) {
                     case 16 -> { // aliado
-                        Ally a = new Ally();
-                        placeAt(a, col, row, 2, 3);
-                        gp.obj[0] = a;
-                        
+                        if("estojo".equals(gp.player.inventario[0])) {
+                            Ally a = new Ally();
+                            placeAt(a, col, row, 2, 3);
+                            gp.obj[0] = a;
+                        }
                     }
                     case 17 -> { // inimigo dinamico
                         if (enemyIndex < gp.obj.length) {
@@ -165,7 +169,6 @@ public class AssetSetter {
                             }
                         }
                     }
-
                     case 19 -> { // safezone
                         if (faseState == 1) {
                         InteractionBlock block = new InteractionBlock(gp);
@@ -236,16 +239,15 @@ public class AssetSetter {
                             }
                         }
                     }
-                    case 27 ->{
-                        if (faseState == 2) {
-                            if (enemyIndex < gp.obj.length) {
-                                InteractionBlock block = new InteractionBlock(gp, "/res/levelsimage/level2/estojo.png");
-                                placeAt(block, col, row, 1, 1);
-                                block.dialogueLines = new String[] {"Achei meu estojo"};
-                                block.promptText = "Estojo (aperte E)";
-                                gp.obj[enemyIndex++] = block;
-                            }
-                        }
+                    case 26 -> {
+                        if (faseState == 1) continue;
+                        InteractionBlock item = new InteractionBlock(gp);
+                        item = new InteractionBlock(gp, "/res/levelsimage/level2/estojo.png");
+                        placeAt(item, col, row, 1, 1);
+                        item.dialogueLines = new String[] {"Ufa! Enfim achei meu estojo. Preciso encontrar a professora e contar o que aconteceu."};
+                        item.promptText = "Pegar o Estojo (aperte E)";
+                        gp.obj[enemyIndex++] = item;
+                        this.item = enemyIndex - 1; // Armazena o índice do item para referência futura
                     }
                 }
             }
