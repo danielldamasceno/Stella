@@ -154,7 +154,7 @@
             this.setFocusable(true);      // Permite receber eventos de teclado
             this.requestFocusInWindow();  // Pede foco para capturar teclas
 
-            som.tocarTrilha("leticia-STELLA-abertura-do-jogo-tela-inicial-2026-07-13-06_53.wav");
+            som.tocarTrilha("audio/leticia-STELLA-abertura-do-jogo-tela-inicial-2026-07-13-06_53.wav");
             // Tenta carregar a imagem de fundo do menu e a textura dos botões
             try {
                 backgroundImage = loadImage("/res/menu.png");
@@ -359,7 +359,7 @@
                                     invasorTriggered = false;
                                     invasorEnemy = null;
                                 }                               
-                som.tocarTrilha("leticia-trilha-ambiente-2026-07-13-06_54.wav");
+                som.tocarTrilha("audio/leticia-trilha-ambiente-2026-07-13-06_54.wav");
 
             }
             public void setDialog() {
