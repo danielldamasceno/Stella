@@ -122,6 +122,7 @@
         JButton hardButton;
         JButton backButton;
         JButton restartButton;
+        JButton returnTitleButton;
         JButton nextFaseButton;
         BufferedImage buttonTexture;
         BufferedImage backgroundImage;
@@ -219,10 +220,16 @@
 
                 //Usados somente no final de fases
                 /** Voltar a tela inicial */
-                restartButton = createTexturedButton("Voltar a tela inicial", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
+                restartButton = createTexturedButton("Tentar de Novo", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         restartGame();
+                }
+                });
+                returnTitleButton = createTexturedButton("Voltar ao Título", screenWidth/2 - 100, screenHeight/2 + 200, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        resetGame();
                 }
                 });
                 /** Chama "nextLevel" */
@@ -240,6 +247,7 @@
                 this.add(hardButton);
                 this.add(backButton);
                 this.add(restartButton);
+                this.add(returnTitleButton);
                 this.add(nextFaseButton);
 
                 // Configura as springs de diálogo
@@ -644,7 +652,35 @@
             public void restartGame() {
                 Fear.situation = 0;
                 Fear.distIn = 0;
-                FASE_STATE = 1;
+                
+
+                // Recria o jogador do zero
+                player = new Player(this, key);
+
+                // Recoloca os objetos no mundo
+                for (int i = 0; i < obj.length; i++) {
+                obj[i] = null;
+                }
+                setupGame();
+
+                // Esconde o botão e volta para o título
+                restartButton.setVisible(false);
+                nextFaseButton.setVisible(false);
+                gameState = PLAY_STATE;
+
+                // Readiciona os botões do menu (foram removidos no startGame)
+                // if (startButton.getParent() == null) this.add(startButton);
+                //if (optionsButton.getParent() == null) this.add(optionsButton);
+                // showOptionButtons(false);
+
+                this.revalidate();
+                this.repaint();
+                this.requestFocusInWindow();
+            }
+            public void resetGame() {
+                Fear.situation = 0;
+                Fear.distIn = 0;
+                FASE_STATE=1;
 
                 // Recria o jogador do zero
                 player = new Player(this, key);
@@ -663,13 +699,12 @@
                 // Readiciona os botões do menu (foram removidos no startGame)
                 if (startButton.getParent() == null) this.add(startButton);
                 //if (optionsButton.getParent() == null) this.add(optionsButton);
-                showOptionButtons(false);
+                // showOptionButtons(false);
 
                 this.revalidate();
                 this.repaint();
                 this.requestFocusInWindow();
             }
-
 
             public void updateCam() {
                 // Ajusta a câmera para não sair dos limites do mapa.
@@ -1245,7 +1280,7 @@
                     String subtitle = "Aperte o botão para começar";
                     int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
                     g2.drawString(subtitle, screenWidth/2 - subtitleWidth/2, screenHeight/2);
-                    
+                    returnTitleButton.setVisible(false);
                     // Desenha o background da tela de título
                     if (backgroundImage != null) {
                         g2.drawImage(backgroundImage, 0, 0, screenWidth, screenHeight, this);
@@ -1512,8 +1547,9 @@
                     String subTextGameOver = "Barra de medo chegou ao maximo.";
                     int sw = g2.getFontMetrics().stringWidth(subTextGameOver);
                     g2.drawString(subTextGameOver, screenWidth/2 - sw/2, screenHeight/2 + 2);
-
+                    returnTitleButton.setVisible(true);
                     restartButton.setVisible(true);
+                    
             }
             private void drawVictory(Graphics2D g2) {
                 g2.setColor(new Color(0, 0, 0, 200));
