@@ -708,34 +708,38 @@
             }
 
             public void updateCam() {
-                // Ajusta a câmera para não sair dos limites do mapa.
-                    // cameraX/Y = coordenada do mundo que estará no canto superior-esquerdo da tela
-                    int maxCameraX = worldWidth - screenWidth + 72;
-                    int maxCameraY = worldHeight - screenHeight + 72;
-                    if (maxCameraX < 0) maxCameraX = 0;
-                    if (maxCameraY < 0) maxCameraY = 0;
-                    int cameraX = player.worldX - player.screenX;
-                    int cameraY = player.worldY - player.screenY;
-                    // Limita a câmera entre 0 e o máximo do mundo
-                    cameraX = Math.max(0, Math.min(cameraX, maxCameraX));
-                    cameraY = Math.max(0, Math.min(cameraY, maxCameraY));
-                    // Calcula onde o jogador ficará na tela com a câmera limitada
-                    player.screenX = player.worldX - cameraX;
-                    player.screenY = player.worldY - cameraY;
-                    // Guarda a posição da câmera no GamePanel para que o mundo use-a ao desenhar
-                    this.cameraX = cameraX;
-                    this.cameraY = cameraY;
+                // Ajusta a câmera para centralizar o jogador sempre que possível.
+                int centerScreenX = screenWidth / 2 - tileSz / 2;
+                int centerScreenY = screenHeight / 2 - tileSz / 2;
+
+                int maxCameraX = worldWidth - screenWidth;
+                int maxCameraY = worldHeight - screenHeight;
+                if (maxCameraX < 0) maxCameraX = 0;
+                if (maxCameraY < 0) maxCameraY = 0;
+
+                int cameraX = player.worldX - centerScreenX;
+                int cameraY = player.worldY - centerScreenY;
+
+                cameraX = Math.max(0, Math.min(cameraX, maxCameraX));
+                cameraY = Math.max(0, Math.min(cameraY, maxCameraY));
+
+                player.screenX = player.worldX - cameraX;
+                player.screenY = player.worldY - cameraY;
+
+                this.cameraX = cameraX;
+                this.cameraY = cameraY;
             }
             public void updateCamToSafezone() {
-                // Move a câmera para o centro da safezone
+                // Move a câmera para o centro da safezone, respeitando os limites do mundo.
                 int safeX = 25 * tileSz; // coordenada X da safezone
                 int safeY = 25 * tileSz; // coordenada Y da safezone
-                int cameraX = safeX - screenWidth / 2;
-                int cameraY = safeY - screenHeight / 2;
+                int centerScreenX = screenWidth / 2 - tileSz / 2;
+                int centerScreenY = screenHeight / 2 - tileSz / 2;
+                int cameraX = safeX - centerScreenX;
+                int cameraY = safeY - centerScreenY;
 
-                // Limita a câmera entre 0 e o máximo do mundo
-                int maxCameraX = worldWidth - screenWidth + 72;
-                int maxCameraY = worldHeight - screenHeight + 72;
+                int maxCameraX = worldWidth - screenWidth;
+                int maxCameraY = worldHeight - screenHeight;
                 if (maxCameraX < 0) maxCameraX = 0;
                 if (maxCameraY < 0) maxCameraY = 0;
                 cameraX = Math.max(0, Math.min(cameraX, maxCameraX));
