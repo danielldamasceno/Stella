@@ -664,6 +664,7 @@
                 setupGame();
 
                 // Esconde o botão e volta para o título
+                returnTitleButton.setVisible(false);
                 restartButton.setVisible(false);
                 nextFaseButton.setVisible(false);
                 gameState = PLAY_STATE;
@@ -1350,6 +1351,12 @@
                 for (int i = 0; i < lines.length; i++) {
                     g2.drawString(lines[i], 70, startY + i * lineHeight);
                 }
+
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                String continuePrompt = "Pressione Enter para continuar";
+                int promptWidth = g2.getFontMetrics().stringWidth(continuePrompt);
+                g2.drawString(continuePrompt, screenWidth - 70 - promptWidth, screenHeight - 60);
             }
             private void drawHideSequence(Graphics2D g2) {
                 tileManager.Draw(g2);
@@ -1421,6 +1428,12 @@
                 for (int i = 0; i < lines.length; i++) {
                     g2.drawString(lines[i], 70, startY + i * lineHeight);
                 }
+
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                String continuePrompt = "Pressione Enter para continuar";
+                int promptWidth = g2.getFontMetrics().stringWidth(continuePrompt);
+                g2.drawString(continuePrompt, screenWidth - 70 - promptWidth, screenHeight - 60);
             }
 
             private void drawFade(Graphics2D g2) {
