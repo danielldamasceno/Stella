@@ -1,5 +1,8 @@
 package com.stella.core;
 
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
 
@@ -15,26 +18,36 @@ public class App {
     public static void main(String[] args) throws Exception {
         // Cria a janela principal
         JFrame window = new JFrame("Stella");
-        
-        
+
         // Configura para fechar ao clicar no X
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        // Não permite redimensionar
+
+        // Impede redimensionamento manual e define resolução fixa
         window.setResizable(false);
-        
+
         // Cria o painel do jogo
         GamePanel panel = new GamePanel();
-        
+
         // Adiciona o painel à janela
         window.add(panel);
-        
+
         // Inicializa os objetos do jogo
         panel.setupGame();
-        
-        // Ajusta o tamanho da janela ao conteúdo
-        window.pack();
-        
+
+        // Define a resolução desejada da janela
+        window.setPreferredSize(new Dimension(1920, 1080));
+        window.setSize(1920, 1080);
+
+        // Ativa tela cheia sem bordas, se suportado
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        if (gd.isFullScreenSupported()) {
+            window.setUndecorated(true);
+            gd.setFullScreenWindow(window);
+        } else {
+            window.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
+
         // Coloca a janela no centro da tela
         window.setLocationRelativeTo(null);
         
