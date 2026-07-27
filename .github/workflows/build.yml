@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -19,11 +19,12 @@ jobs:
           java-version: '21'
 
       - name: Executar build.bat
-        run: cmd /c build.bat
         shell: cmd
+        run: set CI=true && build.bat
 
-      - name: Enviar JAR
+      - name: Enviar executável
         uses: actions/upload-artifact@v4
         with:
-          name: Stella
-          path: "*.jar"
+          name: Stella-exe
+          path: dist/**/*
+          if-no-files-found: error

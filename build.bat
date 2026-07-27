@@ -47,22 +47,38 @@ if errorlevel 1 (
 )
 popd
 
-REM ---- 5. Testa o jar ----
+REM ---- 5. Testa o jar (pulando em CI) ----
 echo.
-echo [5/6] Testando Stella.jar (feche o jogo para continuar o build)...
-java -jar Stella.jar
-if errorlevel 1 (
-    echo.
-    echo [AVISO] O jar retornou erro ao rodar. Verifique antes de gerar o .exe.
-    echo Pressione qualquer tecla para continuar mesmo assim, ou feche esta janela para abortar.
-    pause >nul
+if defined CI (
+    echo [5/6] Ambiente CI detectado; pulando teste interativo do jar.
+) else (
+    echo [5/6] Testando Stella.jar (feche o jogo para continuar o build)...
+    java -jar Stella.jar
+    if errorlevel 1 (
+        echo.
+        echo [AVISO] O jar retornou erro ao rodar. Verifique antes de gerar o .exe.
+        echo Pressione qualquer tecla para continuar mesmo assim, ou feche esta janela para abortar.
+        pause >nul
+    )
 )
 
-REM ---- 6. Gera o .exe (app-image) ----
+REM ---- 6. Gera o .exe ----
 echo.
 echo [6/6] Gerando executavel com jpackage...
 if exist dist rmdir /S /Q dist
-jpackage --type app-image --name Stella --input . --main-jar Stella.jar --main-class com.stella.core.App --icon frontidle.ico --dest dist
+where jpackage >nul 2>&1
+if errorlevel 1 (
+    if defined JAVA_HOME (
+        set "JPACKAGE_CMD=%JAVA_HOME%\bin\jpackage.exe"
+    ) else (
+        echo [ERRO] jpackage nao encontrado no PATH.
+        exit /b 1
+    )
+) else (
+    set "JPACKAGE_CMD=jpackage"
+)
+
+"%JPACKAGE_CMD%" --type exe --name Stella --input . --main-jar Stella.jar --main-class com.stella.core.App --icon frontidle.ico --dest dist --app-version 1.0
 if errorlevel 1 (
     echo.
     echo [ERRO] Falha ao gerar o .exe. Build abortado.
@@ -72,7 +88,9 @@ if errorlevel 1 (
 echo.
 echo ============================================
 echo   BUILD CONCLUIDO COM SUCESSO
-echo   Executavel em: dist\Stella\Stella.exe
+for /r dist %%F in (*.exe) do (
+    echo Executavel gerado: %%~fF
+)
 echo ============================================
 
 endlocal
