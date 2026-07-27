@@ -37,15 +37,29 @@ REM ---- 4. Empacota em .jar ----
 echo.
 echo [4/6] Empacotando em Stella.jar...
 if exist Stella.jar del /Q Stella.jar
-pushd bin
-jar --create --file ..\Stella.jar --main-class com.stella.core.App .
+
+set "JAR_CMD=jar"
+where jar >nul 2>&1
+if errorlevel 1 (
+    if defined JAVA_HOME (
+        if exist "%JAVA_HOME%\bin\jar.exe" (
+            set "JAR_CMD=%JAVA_HOME%\bin\jar.exe"
+        ) else (
+            echo [ERRO] jar.exe nao encontrado. Instale o JDK ou ajuste JAVA_HOME.
+            exit /b 1
+        )
+    ) else (
+        echo [ERRO] jar.exe nao encontrado no PATH e JAVA_HOME nao esta definido.
+        exit /b 1
+    )
+)
+
+"%JAR_CMD%" --create --file Stella.jar --main-class com.stella.core.App -C bin .
 if errorlevel 1 (
     echo.
     echo [ERRO] Falha ao criar o .jar. Build abortado.
-    popd
     exit /b 1
 )
-popd
 
 REM ---- 5. Testa o jar (pulando em CI) ----
 echo.
@@ -66,16 +80,21 @@ REM ---- 6. Gera o .exe ----
 echo.
 echo [6/6] Gerando executavel com jpackage...
 if exist dist rmdir /S /Q dist
+
+set "JPACKAGE_CMD=jpackage"
 where jpackage >nul 2>&1
 if errorlevel 1 (
     if defined JAVA_HOME (
-        set "JPACKAGE_CMD=%JAVA_HOME%\bin\jpackage.exe"
+        if exist "%JAVA_HOME%\bin\jpackage.exe" (
+            set "JPACKAGE_CMD=%JAVA_HOME%\bin\jpackage.exe"
+        ) else (
+            echo [ERRO] jpackage.exe nao encontrado. Instale o JDK ou ajuste JAVA_HOME.
+            exit /b 1
+        )
     ) else (
-        echo [ERRO] jpackage nao encontrado no PATH.
+        echo [ERRO] jpackage.exe nao encontrado no PATH e JAVA_HOME nao esta definido.
         exit /b 1
     )
-) else (
-    set "JPACKAGE_CMD=jpackage"
 )
 
 "%JPACKAGE_CMD%" --type exe --name Stella --input . --main-jar Stella.jar --main-class com.stella.core.App --icon frontidle.ico --dest dist --app-version 1.0
@@ -88,7 +107,7 @@ if errorlevel 1 (
 echo.
 echo ============================================
 echo   BUILD CONCLUIDO COM SUCESSO
-for /r dist %%F in (*.exe) do (
+for %%F in (dist\*.exe) do (
     echo Executavel gerado: %%~fF
 )
 echo ============================================
