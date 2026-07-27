@@ -1456,7 +1456,7 @@
                 HUD.Draw(g2);
                 int alpha = (int)(fadeAlpha * 255);
                 g2.setColor(new Color(0, 0, 0, alpha));
-                g2.fillRect(0, 0, screenWidth, screenHeight);
+                g2.fillRect(0,0, screenWidth, screenHeight);
             }
             private void drawFadeOut(Graphics2D g2) {
                 tileManager.Draw(g2);
@@ -1465,7 +1465,7 @@
                 HUD.Draw(g2);
                 int alpha = (int)(fadeAlpha * 255);
                 g2.setColor(new Color(0, 0, 0, alpha));
-                g2.fillRect(0, 0, screenWidth, screenHeight);
+                g2.fillRect(0,0, screenWidth, screenHeight);
             }
             
             private String[] wrapText(String text, Graphics2D g2, int maxWidth) {

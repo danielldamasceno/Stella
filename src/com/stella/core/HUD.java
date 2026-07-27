@@ -3,6 +3,7 @@ package com.stella.core;
 import com.stella.player.Fear;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 
 public class HUD {
 
@@ -44,9 +45,7 @@ public class HUD {
         }
 
         if (fear > 0) {
-            int alpha = (int)(140 * fear);
-            g2.setColor(new Color(8, 0, 12, alpha));
-            g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+           
 
             float[] fractions = {0.15f, 0.65f, 1.0f};
             Color[] colors = {
@@ -55,21 +54,25 @@ public class HUD {
                 new Color(80, 0, 16, (int)(180 * fear))
             };
 
+            java.awt.Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int fullScreenWidth = Math.max(screenSize.width, gp.screenWidth);
+            int fullScreenHeight = Math.max(screenSize.height, gp.screenHeight);
+
             java.awt.RadialGradientPaint vignette = new java.awt.RadialGradientPaint(
-                gp.screenWidth / 2f,
-                gp.screenHeight / 2f,
-                Math.max(gp.screenWidth, gp.screenHeight) * 0.75f,
+                fullScreenWidth / 2f,
+                fullScreenHeight / 2f,
+                Math.max(fullScreenWidth, fullScreenHeight) * 0.9f,
                 fractions,
                 colors
             );
 
             g2.setPaint(vignette);
-            g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+            g2.fillRect(0, 0, fullScreenWidth, fullScreenHeight);
             g2.setPaint(null);
 
             if ((System.currentTimeMillis() / 120) % 2 == 0) {
                 g2.setColor(new Color(255, 20, 30, (int)(18 * fear)));
-                g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+                g2.fillRect(0, 0, fullScreenWidth, fullScreenHeight);
             }
         }
     }
