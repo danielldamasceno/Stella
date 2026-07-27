@@ -1577,7 +1577,7 @@
                     String ending = "Parabéns! Fim do jogo";
                     int ew = g2.getFontMetrics().stringWidth(ending);
                     g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
-                    restartButton.setVisible(true);
+                    returnTitleButton.setVisible(true);
             }
 
             private void drawFinalImage(Graphics2D g2) {
