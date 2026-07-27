@@ -73,6 +73,16 @@ public class TileManager {
         loadTile(15, "/res/tile/FFP/ffp_wall2_poster02 (1).png", true);
         loadTile(16, "/res/tile/FFP/ffp_wall2_posters01.png", true);
         loadTile(17, "/res/tile/FFP/ffp_wall3.png", true);
+        loadTile(18, "/res/tile/FFP/zballoons1.png", true);
+        loadTile(19, "/res/tile/FFP/zballoons2.png", true);
+        loadTile(20, "/res/tile/FFP/zfloorgift.png", false);
+        loadTile(21, "/res/tile/FFP/zmidnightmotorist1.png", true);
+        loadTile(22, "/res/tile/FFP/zmidnightmotorist2.png", true);
+        loadTile(23, "/res/tile/FFP/zpuppetboxl1.png", true);
+        loadTile(24, "/res/tile/FFP/zpuppetboxl2.png", true);
+        loadTile(25, "/res/tile/FFP/zpuppetboxr1.png", true);
+        loadTile(26, "/res/tile/FFP/zpuppetboxr2.png", true);
+
     }
 
     private void loadSchoolTileSet() {
