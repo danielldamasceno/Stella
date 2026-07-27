@@ -1126,7 +1126,7 @@
 
                         if (nextGameStateAfterDialog == FINAL_IMAGE_STATE) {
                             nextGameStateAfterDialog = PLAY_STATE;
-                            restartButton.setVisible(true);
+                            returnTitleButton.setVisible(true);
                             nextFaseButton.setVisible(false);
                             gameState = FINAL_IMAGE_STATE;
                             return;
@@ -1578,6 +1578,7 @@
                     int ew = g2.getFontMetrics().stringWidth(ending);
                     g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
                     returnTitleButton.setVisible(true);
+                    restartButton.setVisible(false);
             }
 
             private void drawFinalImage(Graphics2D g2) {
