@@ -40,7 +40,7 @@ public class Player extends Entity {
     public boolean isMoving = false;
     public boolean autoWalk = false;
     public String autoWalkDirection = "right";
-    
+
     // Texto de status atual (ex: "Barra de medo: 50%")
     private String situation;
     public String[] inventario = new String[3];
@@ -145,10 +145,12 @@ public class Player extends Entity {
         int moveX = 0;
         int moveY = 0;
 
-        if (key.leftPressed) moveX -= 6;
-        if (key.rightPressed) moveX += 6;
-        if (key.upPressed) moveY -= 6;
-        if (key.downPressed) moveY += 6;
+        if(gp.gameState == 1 || gp.gameState==12){
+            if (key.leftPressed) moveX -= 6;
+            if (key.rightPressed) moveX += 6;
+            if (key.upPressed) moveY -= 6;
+            if (key.downPressed) moveY += 6;
+        }
 
         isMoving = moveX != 0 || moveY != 0;
         if (!isMoving) {

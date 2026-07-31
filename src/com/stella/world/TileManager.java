@@ -129,7 +129,7 @@ public class TileManager {
         loadTile(19, "/res/tile/phs1/L_wardrobe3.png", true);
         loadTile(20, "/res/tile/phs1/R_wardrobe1.png", false);
         loadTile(21, "/res/tile/phs1/R_wardrobe2.png", true);
-        loadTile(22, "/res/tile/phs1/R_wardrobe3.png", true);
+        loadTile(22, "/res/tile/phs1/r_wardrobe3.png", true);
         loadTile(23, "/res/tile/phs1/table_l.png", true);
         loadTile(24, "/res/tile/phs1/table_r.png", true);
         loadTile(25, "/res/tile/phs1/zl_tv1.png", true);

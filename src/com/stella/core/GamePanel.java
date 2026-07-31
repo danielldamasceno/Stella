@@ -1,6 +1,15 @@
     package com.stella.core;
-    import java.awt.Color;
+    import com.stella.assets.AssetSetter;
     import com.stella.assets.SomJogo;
+    import com.stella.entities.Enemy;
+    import com.stella.entities.superObject;
+    import com.stella.physics.CollisionChecker;
+    import com.stella.player.Fear;
+    import com.stella.player.KeyHandler;
+    import com.stella.player.Player;
+    import com.stella.world.SpawnManager;
+    import com.stella.world.TileManager;
+    import java.awt.Color;
     import java.awt.Dimension;
     import java.awt.Font;
     import java.awt.FontMetrics;
@@ -8,24 +17,16 @@
     import java.awt.Graphics2D;
     import java.awt.Rectangle;
     import java.awt.TexturePaint;
-    import java.awt.image.BufferedImage;
+    import java.awt.Toolkit;
     import java.awt.event.ActionEvent;
     import java.awt.event.ActionListener;
+    import java.awt.image.BufferedImage;
     import java.io.IOException;
     import java.io.InputStream;
+    import java.util.ArrayList;
     import javax.imageio.ImageIO;
     import javax.swing.JButton;
-    import javax.swing.JPanel;   
-    import java.util.ArrayList;
-    import com.stella.player.Fear;
-    import com.stella.player.Player;
-    import com.stella.player.KeyHandler;
-    import com.stella.world.SpawnManager;
-    import com.stella.world.TileManager;
-    import com.stella.entities.Enemy;
-    import com.stella.entities.superObject;
-    import com.stella.physics.CollisionChecker;
-    import com.stella.assets.AssetSetter;
+    import javax.swing.JPanel;
 
         /**
          * Painel principal do jogo.
@@ -37,8 +38,8 @@
         final int ogTileSz = 24;           // Tamanho original dos sprites
         final int scale = 3;               // Escala para ampliação
         public final int tileSz = ogTileSz*scale; // Tamanho final dos tiles (72px)
-        final int maxScreenCol = 20;       // Quantas colunas de tiles cabem na tela
-        final int maxScreenRow = 11;       // Quantas linhas de tiles cabem na tela
+        int maxScreenCol = 20;       // Quantas colunas de tiles cabem na tela
+        int maxScreenRow = 11;       // Quantas linhas de tiles cabem na tela
 
             // Tamanho do mundo
         public final int maxWorldCol = 50;     // Quantas colunas de tiles no mundo
@@ -47,8 +48,8 @@
         public final int worldHeight = maxWorldRow * tileSz;
 
             // Tamanho da tela em pixels
-        public final int screenWidth = tileSz * maxScreenCol;  // 1440px
-        public final int screenHeight = tileSz * maxScreenRow; // 864px
+        public int screenWidth = tileSz * maxScreenCol;  // 1440px
+        public int screenHeight = tileSz * maxScreenRow; // 864px
 
         // Estados do jogo
         public static final int TITLE_STATE = 0;  // Tela de título
@@ -170,7 +171,7 @@
             }
             
             // Cria e posiciona o botão de iniciar e de opções
-            startButton = createTexturedButton("Começar o jogo", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+            startButton = createTexturedButton("Começar o jogo", screenWidth/2-35, screenHeight - 100, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     startGame();
@@ -184,7 +185,7 @@
             });*/
 
             //Botões de dificuldade 
-            easyButton = createTexturedButton("Fácil", screenWidth/2 - 100, screenHeight/2 + 50, new ActionListener() {
+            easyButton = createTexturedButton("Fácil", screenWidth/2-35, screenHeight - 200, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     dificulty = 0;
@@ -193,7 +194,7 @@
                 }
                 });
 
-                normalButton = createTexturedButton("Normal", screenWidth/2 - 100, screenHeight/2 + 100, new ActionListener() {
+                normalButton = createTexturedButton("Normal", screenWidth/2-35, screenHeight - 150, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         dificulty = 1;
@@ -202,7 +203,7 @@
                     }
                 });
 
-                hardButton = createTexturedButton("Difícil", screenWidth/2 - 100, screenHeight/2 + 150, new ActionListener() {
+                hardButton = createTexturedButton("Difícil", screenWidth/2-35 , screenHeight - 100, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         dificulty = 2;
@@ -211,7 +212,7 @@
                     }
                 });
 
-                backButton = createTexturedButton("Voltar", screenWidth/2 - 100, screenHeight/2 + 200, new ActionListener() {
+                backButton = createTexturedButton("Voltar", screenWidth/2-35, screenHeight - 50, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         showOptionButtons(false);
@@ -220,20 +221,20 @@
 
                 //Usados somente no final de fases
                 /** Voltar a tela inicial */
-                restartButton = createTexturedButton("Tentar de Novo", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
+                restartButton = createTexturedButton("Tentar de Novo", screenWidth/2-35, screenHeight - 100, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         restartGame();
                 }
                 });
-                returnTitleButton = createTexturedButton("Voltar ao Título", screenWidth/2 - 100, screenHeight/2 + 200, new ActionListener() {
+                returnTitleButton = createTexturedButton("Voltar ao Título", screenWidth/2-35, screenHeight - 150, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         resetGame();
                 }
                 });
                 /** Chama "nextLevel" */
-                nextFaseButton = createTexturedButton("Ir para próxima fase", screenWidth/2 - 100, screenHeight/2 + 300, new ActionListener() {
+                nextFaseButton = createTexturedButton("Ir para próxima fase", screenWidth/2-35, screenHeight - 100, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         nextLevel();
@@ -454,7 +455,8 @@
                 //this.remove(optionsButton);
                 this.revalidate();
                 this.repaint();
-
+                screenWidth = getFullScreenSize().width;
+                screenHeight = getFullScreenSize().height;
                 startCutscene1();
                 this.requestFocusInWindow(); // Garante foco no painel após iniciar
 
@@ -1051,18 +1053,22 @@
                     return;
                 }
                 player.andar(true);
+                
                 updateCam();
 
                 if (FASE_STATE == 1) {
                     player.autoWalk = false;
                     player.isMoving = false;
+                   
                     player.andar(false);
                 } else if (FASE_STATE == 2) {
                     player.autoWalkDirection = "left";
+                    
                     player.autoWalk = false;
                     player.andar(false);
                 } else if (FASE_STATE == 3) {
                     player.andar(false);
+                    
                 }
 
                 if (key.enterPressed) {
@@ -1275,6 +1281,17 @@
                 }
             }
 
+            /**
+             * Retorna o tamanho real da tela (não baseado apenas no tileSize).
+             * Usado para imagens que devem ocupar toda a tela.
+             */
+            private Dimension getFullScreenSize() {
+                java.awt.Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                int width = Math.max(screenSize.width, screenWidth);
+                int height = Math.max(screenSize.height, screenHeight);
+                return new Dimension(width, height);
+            }
+
             private void drawTitle(Graphics2D g2) {
                 // Desenha a tela de título
                     g2.setColor(Color.WHITE);
@@ -1283,12 +1300,13 @@
                     // Desenha o subtítulo
                     g2.setFont(new Font("Arial", Font.PLAIN, 24));
                     String subtitle = "Aperte o botão para começar";
-                    int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
-                    g2.drawString(subtitle, screenWidth/2 - subtitleWidth/2, screenHeight/2);
+                    int subtitle_width = g2.getFontMetrics().stringWidth(subtitle);
+                    g2.drawString(subtitle, screenWidth/2 - subtitle_width/2, screenHeight/2);
                     returnTitleButton.setVisible(false);
                     // Desenha o background da tela de título
                     if (backgroundImage != null) {
-                        g2.drawImage(backgroundImage, 0, 0, screenWidth, screenHeight, this);
+                        Dimension fs = getFullScreenSize();
+                        g2.drawImage(backgroundImage, 0, 0, fs.width, fs.height, this);
                     }
             }
             private void drawObjects(Graphics2D g2) {
@@ -1309,7 +1327,7 @@
                     g2.setColor(new Color(255, 255, 255, 220));
                     g2.fillRoundRect(screenWidth / 2 - 180, screenHeight - 120, 360, 40, 20, 20);
                     g2.setColor(Color.BLACK);
-                    g2.setFont(new Font("Arial", Font.BOLD, 18));
+                    g2.setFont(new Font("Arial", Font.BOLD, 20));
                     int promptWidth = g2.getFontMetrics().stringWidth(interactionPrompt);
                     g2.drawString(interactionPrompt, screenWidth / 2 - promptWidth / 2, screenHeight - 94);
                 }
@@ -1340,12 +1358,12 @@
 
                 // Nome do falante
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
+                g2.setFont(new Font("Arial", Font.BOLD, 20));
                 g2.drawString("Stella:", 70, screenHeight - 128);
 
                 // Texto de diálogo
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.PLAIN, 20));
+                g2.setFont(new Font("Arial", Font.PLAIN, 26));
 
                 String dialogText = dialogue[currentDialogIndex];
                 int maxTextWidth = screenWidth - 140; // dialog box width minus paddings
@@ -1357,7 +1375,7 @@
                 }
 
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                g2.setFont(new Font("Arial", Font.BOLD, 20));
                 String continuePrompt = "Pressione Enter para continuar";
                 int promptWidth = g2.getFontMetrics().stringWidth(continuePrompt);
                 g2.drawString(continuePrompt, screenWidth - 70 - promptWidth, screenHeight - 60);
@@ -1374,10 +1392,10 @@
                 g2.fillRoundRect(60, 60, screenWidth - 120, 170, 20, 20);
 
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 28));
+                g2.setFont(new Font("Arial", Font.BOLD, 26));
                 g2.drawString("Eles te viram...", 90, 105);
 
-                g2.setFont(new Font("Arial", Font.PLAIN, 22));
+                g2.setFont(new Font("Arial", Font.PLAIN, 20));
                 g2.drawString("Tempo restante: " + hideCountdownSeconds + "s", 90, 145);
 
                 if (canHideBehindTable()) {
@@ -1401,7 +1419,8 @@
                 }
 
                 if (sceneImage != null) {
-                    g2.drawImage(sceneImage, 0, 0, screenWidth, screenHeight, this);
+                    Dimension fs = getFullScreenSize();
+                    g2.drawImage(sceneImage, 0, 0, fs.width, fs.height, this);
                 } else {
                     g2.setColor(Color.BLACK);
                     g2.fillRect(0, 0, screenWidth, screenHeight);
@@ -1411,7 +1430,7 @@
                 g2.fillRoundRect(50, screenHeight - 160, screenWidth - 100, 120, 20, 20);
 
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                g2.setFont(new Font("Arial", Font.BOLD, 20));
                 String speakerLabel = "Stella";
                 if (currentDialogIndex < cutsceneSpeakers.length) {
                     String speaker = cutsceneSpeakers[currentDialogIndex];
@@ -1423,7 +1442,7 @@
                 }
                 g2.drawString(speakerLabel + ":", 70, screenHeight - 128);
 
-                g2.setFont(new Font("Arial", Font.PLAIN, 18));
+                g2.setFont(new Font("Arial", Font.PLAIN, 26));
                 String dialogText = dialogue[currentDialogIndex];
                 int maxTextWidth = screenWidth - 140; // dialog box width minus paddings
                 String[] lines = wrapText(dialogText, g2, maxTextWidth);
@@ -1541,7 +1560,7 @@
                 g2.fillRect(0, 0, screenWidth, screenHeight);
                         
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.PLAIN, 28));
+                g2.setFont(new Font("Arial", Font.PLAIN, 26));
                 String loadingText = "Carregando...";
                 int lw = g2.getFontMetrics().stringWidth(loadingText);
                 g2.drawString(loadingText, screenWidth/2 - lw/2, screenHeight/2);
@@ -1550,20 +1569,21 @@
                 // Fundo escuro
                     g2.setColor(Color.BLACK);
                     g2.fillRect(0, 0, screenWidth, screenHeight);
-
+                    Dimension ScreenSize = getFullScreenSize();
+                    
                     // Título "Game Over"
                     g2.setColor(Color.RED);
                     g2.setFont(new Font("SansSerif", Font.BOLD, 72));
                     String gameOver = "GAME OVER";
                     int gw = g2.getFontMetrics().stringWidth(gameOver);
-                    g2.drawString(gameOver, screenWidth/2 - gw/2, screenHeight/2 - 50);
+                    g2.drawString(gameOver, ScreenSize.width/2 - gw/2, ScreenSize.height/2 - 50);
                     
                     //Subtítulo
                     g2.setColor(Color.RED);
                     g2.setFont(new Font("SansSerif", Font.BOLD, 18));
                     String subTextGameOver = "Barra de medo chegou ao maximo.";
                     int sw = g2.getFontMetrics().stringWidth(subTextGameOver);
-                    g2.drawString(subTextGameOver, screenWidth/2 - sw/2, screenHeight/2 + 2);
+                    g2.drawString(subTextGameOver, ScreenSize.width/2- sw/2, ScreenSize.height/2 + 2);
                     returnTitleButton.setVisible(true);
                     restartButton.setVisible(true);
                     
@@ -1571,19 +1591,20 @@
             private void drawVictory(Graphics2D g2) {
                 g2.setColor(new Color(0, 0, 0, 200));
                     g2.fillRect(0, 0, screenWidth, screenHeight);
-
+                    Dimension ScreenSize = getFullScreenSize();
                     g2.setColor(Color.GREEN);
                     g2.setFont(new Font("Arial", Font.BOLD, 56));
                     String ending = "Parabéns! Fim do jogo";
                     int ew = g2.getFontMetrics().stringWidth(ending);
-                    g2.drawString(ending, screenWidth/2 - ew/2, screenHeight/2 - 50);
+                    g2.drawString(ending, ScreenSize.width/2 - ew/2, ScreenSize.height/2 - 50);
                     returnTitleButton.setVisible(true);
                     restartButton.setVisible(false);
             }
 
             private void drawFinalImage(Graphics2D g2) {
                 if (cutsceneFinalBackground != null) {
-                    g2.drawImage(cutsceneFinalBackground, 0, 0, screenWidth, screenHeight, this);
+                    Dimension fs = getFullScreenSize();
+                    g2.drawImage(cutsceneFinalBackground, 0, 0, fs.width, fs.height, this);
                 } else {
                     g2.setColor(Color.BLACK);
                     g2.fillRect(0, 0, screenWidth, screenHeight);
