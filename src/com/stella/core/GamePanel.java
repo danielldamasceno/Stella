@@ -1340,12 +1340,12 @@
 
                 // Nome do falante
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                g2.setFont(new Font("Arial", Font.BOLD, 18));
                 g2.drawString("Stella:", 70, screenHeight - 128);
 
                 // Texto de diálogo
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.PLAIN, 18));
+                g2.setFont(new Font("Arial", Font.PLAIN, 20));
 
                 String dialogText = dialogue[currentDialogIndex];
                 int maxTextWidth = screenWidth - 140; // dialog box width minus paddings
